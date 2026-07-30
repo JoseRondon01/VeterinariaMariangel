@@ -1,0 +1,11 @@
+node_modules
+client/node_modules
+server/node_modules
+dist
+.git
+*.log
+*.tmp
+.env
+.env.local
+.env.*.local
+README.md
