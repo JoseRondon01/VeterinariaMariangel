@@ -1,0 +1,111 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-slate-50 text-slate-800 font-sans antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display;
+  }
+
+  /* Focus visible accesible para WCAG 2.1 */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-medical-500 ring-offset-2 ring-offset-white rounded;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-200 text-base focus-visible:ring-2 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary {
+    @apply btn bg-medical-600 text-white hover:bg-medical-700 active:scale-[0.98] shadow-lg shadow-medical-600/20;
+  }
+
+  .btn-secondary {
+    @apply btn bg-white text-medical-700 border-2 border-medical-200 hover:border-medical-400 hover:bg-medical-50 active:scale-[0.98];
+  }
+
+  .btn-emergency {
+    @apply btn bg-emergency-500 text-white hover:bg-emergency-600 active:scale-[0.98] shadow-lg shadow-emergency-500/30 animate-pulse-emergency;
+  }
+
+  .card {
+    @apply bg-white rounded-2xl shadow-sm border border-slate-100 transition-all duration-300;
+  }
+
+  .card-hover {
+    @apply card hover:shadow-xl hover:-translate-y-1 hover:border-medical-200;
+  }
+
+  .section {
+    @apply py-16 md:py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto;
+  }
+
+  .section-title {
+    @apply text-3xl md:text-4xl font-bold text-slate-900 mb-3;
+  }
+
+  .section-subtitle {
+    @apply text-lg text-slate-600 max-w-2xl mx-auto;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium;
+  }
+}
+
+/* Scrollbar moderno */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 5px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Efectos neân */
+.neon-text {
+  color: #0f7afe;
+  text-shadow: 0 0 5px #00fffe, 0 0 10px #00bffe, 0 0 20px #00bffe, 0 0 40px #00bffe;
+  animation: neonFluctuate 2s ease-in-out infinite alternate;
+}
+.neon-text-aqua {
+  color: #00d3ee;
+  text-shadow: 0 0 5px #00effe, 0 0 10px #00effe, 0 0 20px #00effe, 0 0 40px #00effe;
+  animation: neonFluctuateAqua 2s ease-in-out infinite alternate;
+}
+@keyframes neonFluctuate {
+  0%, 100% {
+    text-shadow: 0 0 5px #00fffe, 0 0 10px #00bffe, 0 0 20px #00bffe, 0 0 40px #00bffe;
+  }
+  50% {
+    text-shadow: 0 0 2px #00fffe, 0 0 4px #00bffe, 0 0 8px #00bffe;
+  }
+}
+@keyframes neonFluctuateAqua {
+  0%, 100% {
+    text-shadow: 0 0 5px #00effe, 0 0 10px #00effe, 0 0 20px #00effe, 0 0 40px #00effe;
+  }
+  50% {
+    text-shadow: 0 0 2px #00effe, 0 0 4px #00effe, 0 0 8px #00effe;
+  }
+}
