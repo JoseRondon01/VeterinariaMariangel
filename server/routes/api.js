@@ -70,7 +70,7 @@ const team = [
     experience: '10 años',
     certifications: ['Cirugía Avanzada', 'AO Trauma Member'],
     bio: 'Especialista en procedimientos quirúrgicos de alta complejidad con enfoque mínimamente invasivo.',
-    image: 'https://randomuser.me/api/portraits/men/32.jpg',
+    image: '/dra-mariangel.png',
   },
   {
     id: 3,
@@ -80,7 +80,7 @@ const team = [
     experience: '8 años',
     certifications: ['Exotic Animal Practice', 'Fear Free Certified'],
     bio: 'Referente regional en medicina de animales no convencionales y conservación.',
-    image: 'https://randomuser.me/api/portraits/women/68.jpg',
+    image: '/dra-mariangel.png',
   },
   {
     id: 4,
@@ -90,7 +90,7 @@ const team = [
     experience: '9 años',
     certifications: ['Dermatology Specialist', 'ISVD Member'],
     bio: 'Experto en diagnóstico y tratamiento de enfermedades de la piel y alergias crónicas.',
-    image: 'https://randomuser.me/api/portraits/men/75.jpg',
+    image: '/dra-mariangel.png',
   },
 ];
 
