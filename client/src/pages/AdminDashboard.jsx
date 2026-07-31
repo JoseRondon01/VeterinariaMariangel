@@ -703,6 +703,8 @@ function ProductManager() {
   const [formCatId, setFormCatId] = useState('');
   const [formImg, setFormImg] = useState('');
   const [formActive, setFormActive] = useState(true);
+  const [formImgUploading, setFormImgUploading] = useState(false);
+  const [formImgPreview, setFormImgPreview] = useState(null);
 
   const resetForm = () => {
     setFormName(''); setFormDesc(''); setFormPrice(''); setFormStock('');
@@ -719,8 +721,27 @@ function ProductManager() {
     setFormStock(String(p.stock || 0));
     setFormCatId(p.categoryId ? String(p.categoryId) : '');
     setFormImg(p.imageUrl || '');
+    setFormImgPreview(p.imageUrl || null);
     setFormActive(p.isActive);
     setShowForm(true);
+  };
+
+  const uploadImage = async (file) => {
+    setFormImgUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('image', file);
+      const token = localStorage.getItem('admin_token');
+      const res = await fetch('/api/admin/upload', { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setFormImg(data.url);
+      setFormImgPreview(data.url);
+    } catch (err) {
+      alert('Error al subir imagen: ' + err.message);
+    } finally {
+      setFormImgUploading(false);
+    }
   };
 
   const fetchProducts = () => {
@@ -822,8 +843,24 @@ function ProductManager() {
               <textarea value={formDesc} onChange={(e) => setFormDesc(e.target.value)} rows="2" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
             </div>
             <div className="sm:col-span-2">
-              <label className="block text-xs font-medium text-slate-500 mb-1">URL de Imagen</label>
-              <input type="text" value={formImg} onChange={(e) => setFormImg(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+              <label className="block text-xs font-medium text-slate-500 mb-1">Imagen del Producto</label>
+              {formImgPreview && (
+                <div className="relative mb-2">
+                  <img src={formImgPreview} alt="Preview" className="w-full h-40 object-cover rounded-lg border border-slate-200" />
+                  <button onClick={() => { setFormImg(''); setFormImgPreview(null); }} className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold hover:bg-red-600">{'\u00D7'}</button>
+                </div>
+              )}
+              <div className="flex gap-2">
+                <label className="flex-1 px-4 py-2.5 bg-slate-100 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-200 transition cursor-pointer text-center">
+                  {formImgUploading ? '\u23F3 Subiendo...' : '\uD83D\uDCF7 Subir Imagen'}
+                  <input type="file" accept="image/*" onChange={async (e) => { const fl = e.target.files?.[0]; if (!fl) return; setFormImgPreview(URL.createObjectURL(fl)); await uploadImage(fl); }} className="hidden" disabled={formImgUploading} />
+                </label>
+                <label className="px-4 py-2.5 bg-slate-100 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-200 transition cursor-pointer text-center">
+                  {'\uD83D\uDCF8'} C\u00E1mara
+                  <input type="file" accept="image/*" capture="environment" onChange={async (e) => { const fl = e.target.files?.[0]; if (!fl) return; setFormImgPreview(URL.createObjectURL(fl)); await uploadImage(fl); }} className="hidden" disabled={formImgUploading} />
+                </label>
+              </div>
+              <input type="text" value={formImg} onChange={(e) => setFormImg(e.target.value)} placeholder="O pega URL externa..." className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm mt-2 focus:ring-2 focus:ring-medical-500 outline-none" />
             </div>
             <div className="flex items-center gap-2">
               <input type="checkbox" id="prod-active" checked={formActive} onChange={(e) => setFormActive(e.target.checked)} className="accent-medical-600 w-4 h-4" />
