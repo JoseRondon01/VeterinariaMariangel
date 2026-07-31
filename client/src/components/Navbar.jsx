@@ -95,8 +95,10 @@ export default function Navbar() {
               {/* Botón de Emergencia - STICKY, alto contraste, siempre visible */}
               <a
                 href={EMERGENCY_TEL}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="btn-emergency text-sm px-4 py-2.5"
-                aria-label={`Llamar ahora al número de emergencia ${EMERGENCY_PHONE}`}
+                aria-label={`WhatsApp de emergencia ${EMERGENCY_PHONE}`}
               >
                 <svg
                   className="w-5 h-5"
@@ -233,6 +235,8 @@ export default function Navbar() {
                 {/* Botón emergencia móvil - 100% táctil, alto contraste */}
                 <a
                   href={EMERGENCY_TEL}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="btn-emergency w-full"
                   aria-label={`WhatsApp de emergencia ${EMERGENCY_PHONE}`}
                 >
@@ -260,7 +264,9 @@ export default function Navbar() {
       {/* Barra flotante de WhatsApp para móvil - siempre visible al hacer scroll */}
       <a
         href={EMERGENCY_TEL}
-        className="md:hidden fixed bottom-4 right-4 z-40 btn-emergency rounded-full w-16 h-16 p-0 shadow-2xl"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-4 right-4 z-40 btn-emergency rounded-full w-16 h-16 p-0 shadow-2xl"
         aria-label={`WhatsApp veterinaria 24/7 - ${EMERGENCY_PHONE}`}
       >
         <svg
