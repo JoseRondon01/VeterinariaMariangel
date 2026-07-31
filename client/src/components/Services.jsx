@@ -27,7 +27,7 @@ export default function Services() {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const { openBooking } = useBooking();
-  const { convertPrice, formatPrice } = useStore();
+  const { convertPrice, formatPrice, selectedCurrency } = useStore();
 
   useEffect(() => {
     fetch('/api/services')
@@ -125,9 +125,16 @@ export default function Services() {
                 </ul>
 
                 {service.priceUsd > 0 && (
-                  <span className="block text-xl font-extrabold text-medical-700 mb-3">
-                    {formatPrice(convertPrice(service.priceUsd))}
-                  </span>
+                  <div className="mb-4">
+                    <span className="block text-xl font-extrabold text-medical-700">
+                      {formatPrice(convertPrice(service.priceUsd))}
+                    </span>
+                    {selectedCurrency !== 'USD' && (
+                      <span className="text-xs text-slate-400 mt-0.5 block">
+                        ≈ $ {Number(service.priceUsd).toFixed(2)} USD
+                      </span>
+                    )}
+                  </div>
                 )}
 
                 <button
