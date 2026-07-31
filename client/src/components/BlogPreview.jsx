@@ -60,7 +60,9 @@ export default function BlogPreview() {
                       loading="lazy"
                       width="400"
                       height="192"
+                      onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
                     />
+                    <div className="w-full h-full bg-slate-200 flex items-center justify-center text-4xl text-slate-400" style={{ display: 'none' }}>📷</div>
                     <span className="absolute top-3 left-3 chip bg-white/90 text-medical-700 text-xs">
                       {post.category}
                     </span>
