@@ -3,7 +3,7 @@ import { Link, NavLink } from 'react-router-dom';
 import { useBooking } from './BookingContext.jsx';
 
 const EMERGENCY_PHONE = '+541127258138';
-const EMERGENCY_TEL = 'https://wa.me/541127258138';
+const EMERGENCY_TEL = 'https://api.whatsapp.com/send/?phone=541127258138&text&type=phone_number&app_absent=0';
 
 const navLinks = [
   { to: '/', label: 'Inicio' },
