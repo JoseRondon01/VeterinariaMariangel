@@ -467,9 +467,9 @@ function BusinessInfoManager() {
         setSchedSundayHours('Cerrado (solo urgencias)');
         setSchedEmergencyLabel('Urgencias');
         setSchedEmergencyHours('24/7 · 365 días');
-        setFacebook('https://www.facebook.com/veterinariamariangel');
-        setInstagram('https://www.instagram.com/veterinariamariangel');
-        setTwitter('https://twitter.com/vetmariangel');
+        setFacebook('https://www.facebook.com/jose.m.rondon.5');
+        setInstagram('https://www.instagram.com/joserondoon01/');
+        setTwitter('');
         setTiktok('');
       })
       .finally(() => setLoading(false));

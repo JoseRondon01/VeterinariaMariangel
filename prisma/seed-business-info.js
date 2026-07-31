@@ -3,7 +3,6 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  // Delete existing and create fresh
   await prisma.businessInfo.deleteMany();
 
   await prisma.businessInfo.create({
@@ -22,19 +21,17 @@ async function main() {
         emergency: { label: 'Urgencias', hours: '24/7 · 365 días', highlight: true },
       },
       social: {
-        facebook: 'https://www.facebook.com/veterinariamariangel',
-        instagram: 'https://www.instagram.com/veterinariamariangel',
-        twitter: 'https://twitter.com/vetmariangel',
+        facebook: 'https://www.facebook.com/jose.m.rondon.5',
+        instagram: 'https://www.instagram.com/joserondoon01/',
+        twitter: '',
         tiktok: '',
       },
     },
   });
 
-  console.log('✅ Tabla business_info re-sembrada con datos actualizados');
+  console.log('✅ business_info actualizado con datos reales');
   const info = await prisma.businessInfo.findFirst();
-  console.log('   businessName:', info.businessName);
-  console.log('   phone:', info.phone);
-  console.log('   social:', JSON.stringify(info.social));
+  console.log('social:', JSON.stringify(info.social));
 }
 
 main()
