@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useStore } from './StoreContext.jsx';
+import ProductIllustration from './ProductIllustration.jsx';
 
 export default function ProductCard({ product }) {
   const { selectedCurrency, convertPrice, formatPrice, addToCart } = useStore();
@@ -29,20 +30,7 @@ export default function ProductCard({ product }) {
             loading="lazy"
           />
         ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center gap-2">
-            <span className="text-5xl opacity-60">
-              {product.categoryId === 1 || product.categoryId === 5 ? '🍖' :
-               product.categoryId === 2 ? '💊' :
-               product.categoryId === 3 ? '🎾' :
-               product.categoryId === 4 ? '🛁' : '🐾'}
-            </span>
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-              {product.categoryId === 1 || product.categoryId === 5 ? 'Alimento' :
-               product.categoryId === 2 ? 'Medicamento' :
-               product.categoryId === 3 ? 'Juguete' :
-               product.categoryId === 4 ? 'Higiene' : 'Producto'}
-            </span>
-          </div>
+          <ProductIllustration productName={product.name} />
         )}
         {/* Badge de moneda */}
         <span className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-xs font-bold px-2 py-1 rounded-full shadow text-slate-600">
