@@ -10,8 +10,230 @@ const API_HEADERS = () => {
 };
 
 // ===========================================================================
-// Componente: ServiceManager
+// Componente: HeroManager (Portada / Inicio)
 // ===========================================================================
+function HeroManager() {
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState('');
+
+  const [badgeText, setBadgeText] = useState('');
+  const [titleLine1, setTitleLine1] = useState('');
+  const [titleHighlight, setTitleHighlight] = useState('');
+  const [subtitle, setSubtitle] = useState('');
+  const [ctaPrimary, setCtaPrimary] = useState('');
+  const [ctaSecondary, setCtaSecondary] = useState('');
+  const [heroImage, setHeroImage] = useState('');
+  const [imgUploading, setImgUploading] = useState(false);
+  const [imgPreview, setImgPreview] = useState(null);
+  const [certIcon, setCertIcon] = useState('');
+  const [certTitle, setCertTitle] = useState('');
+  const [certSubtitle, setCertSubtitle] = useState('');
+
+  // Métricas (3 fijas)
+  const [metric1Value, setMetric1Value] = useState('');
+  const [metric1Label, setMetric1Label] = useState('');
+  const [metric2Value, setMetric2Value] = useState('');
+  const [metric2Label, setMetric2Label] = useState('');
+  const [metric3Value, setMetric3Value] = useState('');
+  const [metric3Label, setMetric3Label] = useState('');
+
+  const uploadImage = async (file) => {
+    setImgUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('image', file);
+      const token = localStorage.getItem('admin_token');
+      const res = await fetch('/api/admin/upload', { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setHeroImage(data.url);
+      setImgPreview(data.url);
+    } catch (err) { alert('Error al subir imagen: ' + err.message); }
+    finally { setImgUploading(false); }
+  };
+
+  useEffect(() => {
+    fetch('/api/admin/hero', { headers: API_HEADERS() })
+      .then((r) => r.json())
+      .then((data) => {
+        setBadgeText(data.badgeText || '');
+        setTitleLine1(data.titleLine1 || '');
+        setTitleHighlight(data.titleHighlight || '');
+        setSubtitle(data.subtitle || '');
+        setCtaPrimary(data.ctaPrimary || '');
+        setCtaSecondary(data.ctaSecondary || '');
+        setHeroImage(data.heroImage || '');
+        setImgPreview(data.heroImage || null);
+        setCertIcon(data.certificationIcon || '');
+        setCertTitle(data.certificationTitle || '');
+        setCertSubtitle(data.certificationSubtitle || '');
+        const m = data.metrics || [{}, {}, {}];
+        setMetric1Value(m[0]?.value || ''); setMetric1Label(m[0]?.label || '');
+        setMetric2Value(m[1]?.value || ''); setMetric2Label(m[1]?.label || '');
+        setMetric3Value(m[2]?.value || ''); setMetric3Label(m[2]?.label || '');
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleSave = async () => {
+    setSaving(true); setMsg('');
+    try {
+      const body = {
+        badgeText, titleLine1, titleHighlight, subtitle,
+        ctaPrimary, ctaSecondary, heroImage,
+        metrics: [
+          { value: metric1Value, label: metric1Label },
+          { value: metric2Value, label: metric2Label },
+          { value: metric3Value, label: metric3Label },
+        ],
+        certificationIcon: certIcon, certificationTitle: certTitle,
+        certificationSubtitle: certSubtitle,
+      };
+      const res = await fetch('/api/admin/hero', {
+        method: 'PUT', headers: API_HEADERS(), body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setMsg('✅ Portada actualizada correctamente');
+    } catch (err) { setMsg('❌ Error: ' + err.message); }
+    finally { setSaving(false); setTimeout(() => setMsg(''), 4000); }
+  };
+
+  if (loading) return <div className="animate-pulse bg-slate-100 h-64 rounded-xl" />;
+
+  return (
+    <div className="bg-white rounded-2xl shadow-md p-6">
+      <h2 className="text-lg font-extrabold text-slate-800 mb-4 flex items-center gap-2">
+        <span>🏠</span> Portada / Inicio
+      </h2>
+      <p className="text-xs text-slate-400 mb-4">Edita los textos, métricas, imagen y certificación que aparecen en la sección principal del sitio.</p>
+
+      {msg && <div className={`mb-4 p-3 rounded-xl text-sm font-medium ${msg.startsWith('✅') ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>{msg}</div>}
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Columna 1: Textos principales */}
+        <div className="border border-slate-200 rounded-xl p-4">
+          <h3 className="font-bold text-slate-700 text-sm mb-3">📝 Textos</h3>
+          <div className="space-y-3">
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Badge superior (chip verde)</label>
+              <input type="text" value={badgeText} onChange={(e) => setBadgeText(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Título (primera línea)</label>
+              <input type="text" value={titleLine1} onChange={(e) => setTitleLine1(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Título (texto resaltado en verde)</label>
+              <input type="text" value={titleHighlight} onChange={(e) => setTitleHighlight(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Subtítulo / Descripción</label>
+              <textarea value={subtitle} onChange={(e) => setSubtitle(e.target.value)} rows="3" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+            </div>
+          </div>
+        </div>
+
+        {/* Columna 2: Botones y métricas */}
+        <div className="space-y-4">
+          <div className="border border-slate-200 rounded-xl p-4">
+            <h3 className="font-bold text-slate-700 text-sm mb-3">🔘 Botones</h3>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-medium text-slate-500 mb-1">Texto botón principal (azul)</label>
+                <input type="text" value={ctaPrimary} onChange={(e) => setCtaPrimary(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-500 mb-1">Texto botón secundario (rojo)</label>
+                <input type="text" value={ctaSecondary} onChange={(e) => setCtaSecondary(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+              </div>
+            </div>
+          </div>
+
+          <div className="border border-slate-200 rounded-xl p-4">
+            <h3 className="font-bold text-slate-700 text-sm mb-3">📊 Métricas (3)</h3>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="block text-xs font-medium text-slate-500 mb-1">Valor 1</label>
+                <input type="text" value={metric1Value} onChange={(e) => setMetric1Value(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-500 mb-1">Etiqueta 1</label>
+                <input type="text" value={metric1Label} onChange={(e) => setMetric1Label(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-500 mb-1">Valor 2</label>
+                <input type="text" value={metric2Value} onChange={(e) => setMetric2Value(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-500 mb-1">Etiqueta 2</label>
+                <input type="text" value={metric2Label} onChange={(e) => setMetric2Label(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-500 mb-1">Valor 3</label>
+                <input type="text" value={metric3Value} onChange={(e) => setMetric3Value(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-500 mb-1">Etiqueta 3</label>
+                <input type="text" value={metric3Label} onChange={(e) => setMetric3Label(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Imagen del Hero */}
+        <div className="border border-slate-200 rounded-xl p-4">
+          <h3 className="font-bold text-slate-700 text-sm mb-3">🖼️ Imagen principal del Hero</h3>
+          {imgPreview && (
+            <div className="relative mb-2">
+              <img src={imgPreview} alt="Preview hero" className="w-full h-48 object-cover rounded-lg border border-slate-200" />
+              <button onClick={() => { setHeroImage(''); setImgPreview(null); }} className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold hover:bg-red-600">{'\u00D7'}</button>
+            </div>
+          )}
+          <div className="flex gap-2">
+            <label className="flex-1 px-4 py-2.5 bg-slate-100 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-200 transition cursor-pointer text-center">
+              {imgUploading ? '\u23F3 Subiendo...' : '\uD83D\uDCF7 Subir Imagen'}
+              <input type="file" accept="image/*" onChange={async (e) => { const fl = e.target.files?.[0]; if (!fl) return; setImgPreview(URL.createObjectURL(fl)); await uploadImage(fl); }} className="hidden" disabled={imgUploading} />
+            </label>
+            <label className="px-4 py-2.5 bg-slate-100 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-200 transition cursor-pointer text-center">
+              {'\uD83D\uDCF8'} C\u00E1mara
+              <input type="file" accept="image/*" capture="environment" onChange={async (e) => { const fl = e.target.files?.[0]; if (!fl) return; setImgPreview(URL.createObjectURL(fl)); await uploadImage(fl); }} className="hidden" disabled={imgUploading} />
+            </label>
+          </div>
+          <input type="text" value={heroImage} onChange={(e) => { setHeroImage(e.target.value); setImgPreview(e.target.value || null); }} placeholder="O pega URL externa..." className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm mt-2 focus:ring-2 focus:ring-medical-500 outline-none" />
+        </div>
+
+        {/* Certificación flotante */}
+        <div className="border border-slate-200 rounded-xl p-4">
+          <h3 className="font-bold text-slate-700 text-sm mb-3">🏅 Certificación flotante</h3>
+          <div className="space-y-3">
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Icono (emoji)</label>
+              <input type="text" value={certIcon} onChange={(e) => setCertIcon(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Título</label>
+              <input type="text" value={certTitle} onChange={(e) => setCertTitle(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Subtítulo</label>
+              <input type="text" value={certSubtitle} onChange={(e) => setCertSubtitle(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-3 mt-6 pt-4 border-t border-slate-100">
+        <button onClick={handleSave} disabled={saving} className="px-6 py-2.5 bg-medical-600 text-white rounded-xl font-bold text-sm hover:bg-medical-700 transition disabled:opacity-50">
+          {saving ? 'Guardando...' : 'Guardar Cambios'}
+        </button>
+        {msg && <span className={`text-sm font-medium ${msg.startsWith('✅') ? 'text-green-600' : 'text-red-600'}`}>{msg}</span>}
+      </div>
+    </div>
+  );
+}
 function ServiceManager() {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -1928,6 +2150,7 @@ export default function AdminDashboard() {
   };
 
   const tabs = [
+    { id: 'hero', label: 'Inicio', icon: '🏠' },
     { id: 'business', label: 'Info Negocio', icon: '🏢' },
     { id: 'services', label: 'Servicios', icon: '🩺' },
     { id: 'team', label: 'Equipo', icon: '👥' },
@@ -1990,6 +2213,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Contenido del tab */}
+        {activeTab === 'hero' && <HeroManager />}
         {activeTab === 'business' && <BusinessInfoManager />}
         {activeTab === 'services' && <ServiceManager />}
         {activeTab === 'team' && <TeamManager />}

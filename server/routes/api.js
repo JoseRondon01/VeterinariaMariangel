@@ -979,6 +979,95 @@ router.put('/admin/business-info', authMiddleware, async (req, res) => {
 });
 
 // ===========================================================================
+// RUTAS ADMIN — Hero (Portada / Inicio)
+// ===========================================================================
+
+router.get('/admin/hero', authMiddleware, async (_req, res) => {
+  try {
+    let info = await prisma.businessInfo.findFirst();
+    if (!info || !info.hero) {
+      // Datos por defecto
+      return res.json({
+        badgeText: 'Urgencias disponibles 24/7',
+        titleLine1: 'Cuidamos a tu mascota',
+        titleHighlight: 'como parte de la familia',
+        subtitle: 'Clínica veterinaria con equipo médico certificado, tecnología de punta y trato humano. Agenda tu cita online en solo 3 pasos.',
+        ctaPrimary: 'Agendar Cita',
+        ctaSecondary: 'Emergencia 24/7',
+        metrics: [
+          { value: '5,000+', label: 'mascotas atendidas' },
+          { value: '4.9★', label: '487 reseñas' },
+          { value: '12+', label: 'años de experiencia' },
+        ],
+        heroImage: 'https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=800&h=800&fit=crop',
+        certificationIcon: '🏆',
+        certificationTitle: 'Fear Free Certified',
+        certificationSubtitle: 'Atención sin estrés',
+      });
+    }
+    res.json(info.hero);
+  } catch (err) {
+    console.error('Error fetching hero:', err);
+    res.status(500).json({ error: 'Error al cargar datos del hero' });
+  }
+});
+
+router.put('/admin/hero', authMiddleware, async (req, res) => {
+  try {
+    const heroData = req.body;
+    let info = await prisma.businessInfo.findFirst();
+    if (!info) {
+      info = await prisma.businessInfo.create({
+        data: { hero: heroData },
+      });
+    } else {
+      info = await prisma.businessInfo.update({
+        where: { id: info.id },
+        data: { hero: heroData },
+      });
+    }
+    console.log('✅ Hero actualizado');
+    res.json({ success: true, hero: info.hero });
+  } catch (err) {
+    console.error('Error updating hero:', err);
+    res.status(500).json({ error: 'Error al actualizar datos del hero' });
+  }
+});
+
+// ===========================================================================
+// RUTA PÚBLICA — Hero (portada)
+// ===========================================================================
+
+router.get('/hero', async (_req, res) => {
+  try {
+    let info = await prisma.businessInfo.findFirst();
+    if (!info || !info.hero) {
+      return res.json({
+        badgeText: 'Urgencias disponibles 24/7',
+        titleLine1: 'Cuidamos a tu mascota',
+        titleHighlight: 'como parte de la familia',
+        subtitle: 'Clínica veterinaria con equipo médico certificado, tecnología de punta y trato humano. Agenda tu cita online en solo 3 pasos.',
+        ctaPrimary: 'Agendar Cita',
+        ctaSecondary: 'Emergencia 24/7',
+        metrics: [
+          { value: '5,000+', label: 'mascotas atendidas' },
+          { value: '4.9★', label: '487 reseñas' },
+          { value: '12+', label: 'años de experiencia' },
+        ],
+        heroImage: 'https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=800&h=800&fit=crop',
+        certificationIcon: '🏆',
+        certificationTitle: 'Fear Free Certified',
+        certificationSubtitle: 'Atención sin estrés',
+      });
+    }
+    res.json(info.hero);
+  } catch (err) {
+    console.error('Error fetching hero (public):', err);
+    res.status(500).json({ error: 'Error al cargar datos del hero' });
+  }
+});
+
+// ===========================================================================
 // RUTAS ADMIN — Productos (CRUD básico)
 // ===========================================================================
 

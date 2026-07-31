@@ -243,6 +243,7 @@ model BusinessInfo {
   mapEmbedUrl     String?   @db.Text @map("map_embed_url")
   schedule        Json?
   social          Json?
+  hero            Json?
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
 
