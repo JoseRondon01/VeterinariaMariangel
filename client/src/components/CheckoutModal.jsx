@@ -1,3 +1,4 @@
+import { apiUrl } from "../api.js";
 import { useState, useEffect } from 'react';
 import { useStore } from './StoreContext.jsx';
 import { useBusinessInfo } from './BusinessInfoContext.jsx';
@@ -43,7 +44,7 @@ export default function CheckoutModal({ open, onClose }) {
   useEffect(() => {
     if (open) {
       setLoadingConfig(true);
-      fetch('/api/payment-config')
+      fetch(apiUrl("/api/payment-config')
         .then((r) => r.json())
         .then((data) => setPaymentConfig(Array.isArray(data) ? data : []))
         .catch(() => setPaymentConfig([]))
@@ -112,7 +113,7 @@ export default function CheckoutModal({ open, onClose }) {
         proofDetails,
       };
 
-      const res = await fetch('/api/orders/create', {
+      const res = await fetch(apiUrl("/api/orders/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),

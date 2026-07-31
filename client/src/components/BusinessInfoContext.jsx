@@ -1,3 +1,4 @@
+import { apiUrl } from "../api.js";
 import { createContext, useContext, useState, useEffect } from 'react';
 
 const BusinessInfoContext = createContext();
@@ -29,7 +30,7 @@ export function BusinessInfoProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/business-info')
+    fetch(apiUrl("/api/business-info')
       .then((res) => res.json())
       .then((data) => {
         if (data && data.businessName) {

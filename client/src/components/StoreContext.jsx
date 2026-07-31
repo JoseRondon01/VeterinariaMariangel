@@ -1,3 +1,4 @@
+import { apiUrl } from "../api.js";
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
 // ===========================================================================
@@ -56,7 +57,7 @@ export function StoreProvider({ children }) {
   // Cargar tasas de cambio desde la API
   useEffect(() => {
     setRatesLoading(true);
-    fetch('/api/exchange-rates')
+    fetch(apiUrl("/api/exchange-rates')
       .then((res) => res.json())
       .then((data) => {
         const map = { USD: 1 };
