@@ -101,7 +101,7 @@ const testimonials = [
     pet: 'Max · Labrador 4 años',
     rating: 5,
     text: 'Salvaron a Max de una torsión gástrica a medianoche. La atención de urgencia fue impecable y el seguimiento, extraordinario.',
-    avatar: '/dra-mariangel.png',
+    avatar: 'https://ui-avatars.com/api/?name=Laura+Mendez&background=FF9800&color=fff&size=256',
   },
   {
     id: 2,
@@ -109,7 +109,7 @@ const testimonials = [
     pet: 'Michi · Gato Siamés 7 años',
     rating: 5,
     text: 'El enfoque Fear Free hizo que Michi no se estresara en su consulta. Por fin una veterinaria que entiende a los gatos.',
-    avatar: '/dra-mariangel.png',
+    avatar: 'https://ui-avatars.com/api/?name=Carlos+Pinto&background=2196F3&color=fff&size=256',
   },
   {
     id: 3,
@@ -117,7 +117,7 @@ const testimonials = [
     pet: 'Rocky · Bulldog 6 años',
     rating: 5,
     text: 'Reservé la cita online en 3 pasos y me atendieron puntual. El equipo médico es transparente y muy profesional.',
-    avatar: '/dra-mariangel.png',
+    avatar: 'https://ui-avatars.com/api/?name=Andrea+Salas&background=9C27B0&color=fff&size=256',
   },
   {
     id: 4,
@@ -125,7 +125,7 @@ const testimonials = [
     pet: 'Luna · Coneja 2 años',
     rating: 5,
     text: 'Pocas veterinarias atienden conejos con tanta especialización. La Dra. Torres es una crack con animales exóticos.',
-    avatar: '/dra-mariangel.png',
+    avatar: 'https://ui-avatars.com/api/?name=Jorge+Nunez&background=009688&color=fff&size=256',
   },
 ];
 
@@ -138,7 +138,7 @@ const blog = [
     category: 'Salud Preventiva',
     date: '2026-07-15',
     readingTime: '6 min',
-    image: '/dra-mariangel.png',
+    image: 'https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=800&h=500&fit=crop',
     content: 'La vacunación es el pilar de la medicina preventiva en cachorros. El calendario inicia entre las 6 y 8 semanas...',
   },
   {
@@ -149,7 +149,7 @@ const blog = [
     category: 'Urgencias',
     date: '2026-07-10',
     readingTime: '5 min',
-    image: '/dra-mariangel.png',
+    image: 'https://images.unsplash.com/photo-1518791841217-8f162f1e1131?w=800&h=500&fit=crop',
     content: 'Reconocer una emergencia a tiempo puede marcar la diferencia. Dificultad respiratoria, vómito persistente...',
   },
   {
@@ -160,7 +160,7 @@ const blog = [
     category: 'Salud Preventiva',
     date: '2026-07-05',
     readingTime: '4 min',
-    image: '/dra-mariangel.png',
+    image: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dea?w=800&h=500&fit=crop',
     content: 'La salud dental felina es frecuentemente subestimada. Una higiene adecuada previene dolor crónico...',
   },
   {
@@ -171,7 +171,7 @@ const blog = [
     category: 'Nutrición',
     date: '2026-06-28',
     readingTime: '7 min',
-    image: '/dra-mariangel.png',
+    image: 'https://images.unsplash.com/photo-1583511655826-05700d52f4d9?w=800&h=500&fit=crop',
     content: 'Los perros senior tienen necesidades nutricionales específicas. Proteínas de alta calidad, control calórico...',
   },
 ];
