@@ -1199,6 +1199,169 @@ function TeamManager() {
 }
 
 // ===========================================================================
+// Componente: TestimonialManager
+// ===========================================================================
+function TestimonialManager() {
+  const [testimonials, setTestimonials] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [msg, setMsg] = useState('');
+
+  const [formName, setFormName] = useState('');
+  const [formPet, setFormPet] = useState('');
+  const [formRating, setFormRating] = useState(5);
+  const [formText, setFormText] = useState('');
+  const [formAvatar, setFormAvatar] = useState('');
+  const [formActive, setFormActive] = useState(true);
+
+  const fetchTestimonials = () => {
+    setLoading(true);
+    fetch('/api/admin/testimonials', { headers: API_HEADERS() })
+      .then((r) => r.json())
+      .then((data) => setTestimonials(Array.isArray(data) ? data : []))
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => { fetchTestimonials(); }, []);
+
+  const openEdit = (t) => {
+    setEditingId(t.id);
+    setFormName(t.name || '');
+    setFormPet(t.pet || '');
+    setFormRating(t.rating || 5);
+    setFormText(t.text || '');
+    setFormAvatar(t.avatar || '');
+    setFormActive(t.active !== false);
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setFormName(''); setFormPet(''); setFormRating(5); setFormText(''); setFormAvatar(''); setFormActive(true);
+  };
+
+  const handleSave = async () => {
+    if (!formName.trim() || !formText.trim()) {
+      setMsg('❌ Nombre y texto del testimonio son obligatorios');
+      setTimeout(() => setMsg(''), 3000);
+      return;
+    }
+    setSaving(true); setMsg('');
+    try {
+      const body = { name: formName.trim(), pet: formPet.trim(), rating: formRating, text: formText.trim(), avatar: formAvatar.trim(), active: formActive };
+      const res = await fetch(`/api/admin/testimonials/${editingId}`, {
+        method: 'PUT',
+        headers: API_HEADERS(),
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setMsg('✅ Testimonio actualizado');
+      cancelEdit();
+      fetchTestimonials();
+    } catch (err) { setMsg('❌ Error: ' + err.message); }
+    finally { setSaving(false); setTimeout(() => setMsg(''), 4000); }
+  };
+
+  const handleDelete = async (id, name) => {
+    if (!confirm(`¿Eliminar el testimonio de "${name}"?`)) return;
+    try {
+      const res = await fetch(`/api/admin/testimonials/${id}`, { method: 'DELETE', headers: API_HEADERS() });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      fetchTestimonials();
+    } catch (err) { alert('Error: ' + err.message); }
+  };
+
+  if (loading) return <div className="animate-pulse bg-slate-100 h-64 rounded-xl" />;
+
+  return (
+    <div className="bg-white rounded-2xl shadow-md p-6">
+      <h2 className="text-lg font-extrabold text-slate-800 mb-4 flex items-center gap-2">
+        <span>⭐</span> Gestión de Reseñas
+      </h2>
+      <p className="text-xs text-slate-400 mb-4">Modera y gestiona los testimonios que aparecen en la web.</p>
+
+      {msg && (
+        <div className={`mb-4 p-3 rounded-xl text-sm font-medium ${msg.startsWith('✅') ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+          {msg}
+        </div>
+      )}
+
+      {editingId && (
+        <div className="mb-6 border border-slate-200 rounded-xl p-4 bg-slate-50">
+          <h3 className="font-bold text-slate-700 text-sm mb-3">Editar: {testimonials.find((t) => t.id === editingId)?.name || ''}</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Nombre *</label>
+              <input type="text" value={formName} onChange={(e) => setFormName(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Mascota</label>
+              <input type="text" value={formPet} onChange={(e) => setFormPet(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Calificación</label>
+              <div className="flex gap-1">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button key={star} type="button" onClick={() => setFormRating(star)}
+                    className="text-2xl transition-transform hover:scale-110">
+                    {star <= formRating ? '⭐' : '☆'}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Avatar (URL)</label>
+              <input type="text" value={formAvatar} onChange={(e) => setFormAvatar(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-medium text-slate-500 mb-1">Texto del testimonio *</label>
+              <textarea value={formText} onChange={(e) => setFormText(e.target.value)} rows="3" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+            </div>
+            <div className="flex items-center gap-2">
+              <input type="checkbox" id="test-active" checked={formActive} onChange={(e) => setFormActive(e.target.checked)} className="accent-medical-600 w-4 h-4" />
+              <label htmlFor="test-active" className="text-sm text-slate-600">Visible en el sitio</label>
+            </div>
+          </div>
+          <div className="flex gap-2 mt-4">
+            <button onClick={handleSave} disabled={saving} className="px-5 py-2 bg-medical-600 text-white rounded-xl font-bold text-sm hover:bg-medical-700 transition disabled:opacity-50">
+              {saving ? 'Guardando...' : 'Guardar Cambios'}
+            </button>
+            <button onClick={cancelEdit} className="px-5 py-2 border border-slate-200 rounded-xl text-sm text-slate-600 hover:bg-slate-100 transition">Cancelar</button>
+          </div>
+        </div>
+      )}
+
+      {testimonials.length === 0 ? (
+        <div className="text-center py-8 text-slate-400"><p className="text-3xl mb-2">⭐</p><p>No hay testimonios registrados.</p></div>
+      ) : (
+        <div className="space-y-2">
+          {testimonials.map((t) => (
+            <div key={t.id} className="flex items-center gap-4 border border-slate-200 rounded-xl p-4 hover:bg-slate-50">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-slate-800 text-sm">{t.name}</span>
+                  <span className="text-xs text-slate-400">{t.pet}</span>
+                  <span className="text-xs">{'⭐'.repeat(t.rating || 5)}</span>
+                  {!t.active && <span className="chip bg-red-100 text-red-600 text-xs">Oculto</span>}
+                </div>
+                <p className="text-xs text-slate-500 mt-1 truncate">{t.text}</p>
+              </div>
+              <div className="flex gap-1 shrink-0">
+                <button onClick={() => openEdit(t)} className="px-3 py-1.5 bg-slate-100 text-slate-700 text-xs rounded-lg font-medium hover:bg-slate-200 transition">Editar</button>
+                <button onClick={() => handleDelete(t.id, t.name)} className="px-3 py-1.5 bg-red-50 text-red-600 text-xs rounded-lg font-medium hover:bg-red-100 transition">Eliminar</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ===========================================================================
 // Componente: BlogManager
 // ===========================================================================
 function BlogManager() {
@@ -1575,6 +1738,7 @@ export default function AdminDashboard() {
     { id: 'business', label: 'Info Negocio', icon: '🏢' },
     { id: 'team', label: 'Equipo', icon: '👥' },
     { id: 'blog', label: 'Consejos', icon: '📝' },
+    { id: 'testimonials', label: 'Reseñas', icon: '⭐' },
     { id: 'products', label: 'Productos', icon: '📦' },
     { id: 'orders', label: 'Verificar Pagos', icon: '📋' },
     { id: 'summary', label: 'Resumen Diario', icon: '📊' },
@@ -1635,6 +1799,7 @@ export default function AdminDashboard() {
         {activeTab === 'business' && <BusinessInfoManager />}
         {activeTab === 'team' && <TeamManager />}
         {activeTab === 'blog' && <BlogManager />}
+        {activeTab === 'testimonials' && <TestimonialManager />}
         {activeTab === 'products' && <ProductManager />}
         {activeTab === 'orders' && <OrderVerificationTable />}
         {activeTab === 'summary' && <DailySummary />}

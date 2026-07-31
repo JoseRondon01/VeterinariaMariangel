@@ -283,7 +283,55 @@ router.get('/team', async (_req, res) => {
     res.json(adminTeamStore);
   }
 });
-router.get('/testimonials', (_req, res) => res.json(testimonials));
+const adminTestimonialStore = testimonials.map((t) => ({ ...t }));
+
+router.get('/testimonials', async (_req, res) => {
+  try {
+    const dbTestimonials = await prisma.testimonial.findMany({
+      where: { active: true },
+      orderBy: { createdAt: 'desc' },
+    });
+    if (dbTestimonials.length > 0) return res.json(dbTestimonials);
+    res.json(adminTestimonialStore);
+  } catch (err) {
+    console.error('Error fetching testimonials from DB, fallback to memory:', err.message);
+    res.json(adminTestimonialStore);
+  }
+});
+
+// POST público: clientes dejan reseña
+router.post('/testimonials', async (req, res) => {
+  try {
+    const { name, pet, rating, text, avatar } = req.body;
+    if (!name || !text) {
+      return res.status(400).json({ error: 'Nombre y texto del testimonio son obligatorios' });
+    }
+
+    const testimonialData = {
+      name: name.trim(),
+      pet: pet || '',
+      rating: Math.min(5, Math.max(1, Number(rating) || 5)),
+      text: text.trim(),
+      avatar: avatar || '',
+      active: true,
+    };
+
+    try {
+      const created = await prisma.testimonial.create({ data: testimonialData });
+      console.log(`✅ Testimonio creado en DB: ${created.name}`);
+      return res.status(201).json({ success: true, testimonial: created });
+    } catch (dbErr) {
+      console.log('DB not ready, saving testimonial to memory:', dbErr.message);
+      const newId = Math.max(0, ...adminTestimonialStore.map((t) => t.id)) + 1;
+      const newTestimonial = { id: newId, ...testimonialData };
+      adminTestimonialStore.push(newTestimonial);
+      return res.status(201).json({ success: true, testimonial: newTestimonial });
+    }
+  } catch (err) {
+    console.error('Error creating testimonial:', err);
+    res.status(500).json({ error: 'Error al crear testimonio' });
+  }
+});
 
 // Admin blog store (memoria temporal hasta que exista la tabla)
 const adminBlogStore = blog.map((b) => ({ ...b }));
@@ -1166,6 +1214,69 @@ router.delete('/admin/blog/:id', authMiddleware, async (req, res) => {
   } catch (err) {
     console.error('Error deleting blog:', err);
     res.status(500).json({ error: 'Error al eliminar artículo' });
+  }
+});
+
+// ===========================================================================
+// RUTAS ADMIN — Gestión de Testimonios (Reseñas)
+// ===========================================================================
+
+router.get('/admin/testimonials', authMiddleware, async (_req, res) => {
+  try {
+    const dbTestimonials = await prisma.testimonial.findMany({ orderBy: { createdAt: 'desc' } });
+    if (dbTestimonials.length > 0) return res.json(dbTestimonials);
+    res.json(adminTestimonialStore);
+  } catch (err) {
+    console.error('Error fetching admin testimonials, fallback to memory:', err.message);
+    res.json(adminTestimonialStore);
+  }
+});
+
+router.put('/admin/testimonials/:id', authMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, pet, rating, text, avatar, active } = req.body;
+    try {
+      const data = {};
+      if (name !== undefined) data.name = name;
+      if (pet !== undefined) data.pet = pet;
+      if (rating !== undefined) data.rating = rating;
+      if (text !== undefined) data.text = text;
+      if (avatar !== undefined) data.avatar = avatar;
+      if (active !== undefined) data.active = active;
+      const updated = await prisma.testimonial.update({ where: { id: Number(id) }, data });
+      return res.json({ success: true, testimonial: updated });
+    } catch (dbErr) {
+      const member = adminTestimonialStore.find((t) => t.id === Number(id));
+      if (!member) return res.status(404).json({ error: 'Testimonio no encontrado' });
+      if (name !== undefined) member.name = name;
+      if (pet !== undefined) member.pet = pet;
+      if (rating !== undefined) member.rating = rating;
+      if (text !== undefined) member.text = text;
+      if (avatar !== undefined) member.avatar = avatar;
+      return res.json({ success: true, testimonial: member });
+    }
+  } catch (err) {
+    console.error('Error updating testimonial:', err);
+    res.status(500).json({ error: 'Error al actualizar testimonio' });
+  }
+});
+
+router.delete('/admin/testimonials/:id', authMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+    try {
+      await prisma.testimonial.delete({ where: { id: Number(id) } });
+      return res.json({ success: true });
+    } catch (dbErr) {
+      const idx = adminTestimonialStore.findIndex((t) => t.id === Number(id));
+      if (idx === -1) return res.status(404).json({ error: 'Testimonio no encontrado' });
+      adminTestimonialStore.splice(idx, 1);
+      return res.json({ success: true });
+    }
+  } catch (err) {
+    console.error('Error deleting testimonial:', err);
+    res.status(500).json({ error: 'Error al eliminar testimonio' });
   }
 });
 
