@@ -1400,7 +1400,13 @@ function BlogManager() {
         <div className="space-y-3">
           {posts.map((post) => (
             <div key={post.id} className="flex items-center gap-4 border border-slate-200 rounded-xl p-4 hover:bg-slate-50 transition">
-              <img src={post.image || ''} alt={post.title} className="w-20 h-16 rounded-lg object-cover shrink-0" />
+              <img
+                src={post.image || ''}
+                alt={post.title}
+                className="w-20 h-16 rounded-lg object-cover shrink-0"
+                onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
+              />
+              <span className="w-20 h-16 rounded-lg bg-slate-200 shrink-0 items-center justify-center text-xs text-slate-400" style={{ display: 'none' }}>📷</span>
               <div className="flex-1 min-w-0">
                 <h3 className="font-bold text-slate-800 text-sm truncate">{post.title}</h3>
                 <div className="flex items-center gap-2 mt-1">
