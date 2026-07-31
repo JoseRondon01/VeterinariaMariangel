@@ -1,0 +1,26 @@
+# ============================================================================
+# Render Blueprint — Veterinaria Mariangel Marketplace
+# Deploy: Web Service (Express monolith = API + static frontend)
+# ============================================================================
+
+services:
+  - type: web
+    name: veterinaria-mariangel
+    env: node
+    plan: starter
+    buildCommand: |
+      cd server && npm install && npx prisma generate && cd ../client && npm install && npm run build && cd ..
+    startCommand: cd server && NODE_ENV=production node index.js
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: ADMIN_USER
+        sync: false
+      - key: ADMIN_PASS
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: 24.x

@@ -1,10 +1,36 @@
 import { Router } from 'express';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+import { prisma } from '../index.js';
 
 export const router = Router();
 
-// ---------------------------------------------------------------------------
-// Datos en memoria (seed). En producción se sustituiría por Prisma/DB.
-// ---------------------------------------------------------------------------
+// ===========================================================================
+// Middleware de autenticación JWT para rutas admin
+// ===========================================================================
+
+const ADMIN_USER = process.env.ADMIN_USER || 'admin';
+const ADMIN_PASS = process.env.ADMIN_PASS || 'veterinaria2024';
+const JWT_SECRET = process.env.JWT_SECRET || 'mariangel-vet-jwt-secret-key-2026-marketplace';
+
+function authMiddleware(req, res, next) {
+  const header = req.headers.authorization;
+  if (!header || !header.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Token requerido' });
+  }
+  try {
+    const token = header.split(' ')[1];
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.adminUser = decoded;
+    next();
+  } catch {
+    return res.status(401).json({ error: 'Token inválido o expirado' });
+  }
+}
+
+// ===========================================================================
+// EXISTING: Datos en memoria para endpoints veterinarios (seed)
+// ===========================================================================
 
 const services = [
   {
@@ -196,7 +222,6 @@ const visitReasons = [
   'Segunda opinión',
 ];
 
-// Genera slots disponibles para los próximos 7 días
 function generateTimeSlots() {
   const slots = [];
   const now = new Date();
@@ -214,12 +239,11 @@ function generateTimeSlots() {
   return slots;
 }
 
-// Almacén en memoria de citas creadas
 const appointments = [];
 
-// ---------------------------------------------------------------------------
-// Rutas
-// ---------------------------------------------------------------------------
+// ===========================================================================
+// RUTAS PÚBLICAS — Veterinaria (existentes)
+// ===========================================================================
 
 router.get('/services', (_req, res) => res.json(services));
 router.get('/team', (_req, res) => res.json(team));
@@ -238,14 +262,12 @@ router.get('/booking/slots', (_req, res) => res.json(generateTimeSlots()));
 
 router.post('/appointments', (req, res) => {
   const { ownerName, phone, petName, speciesId, reason, date, time, notes } = req.body;
-
   if (!ownerName || !phone || !petName || !speciesId || !reason || !date || !time) {
     return res.status(400).json({
       error: 'Faltan campos obligatorios',
       required: ['ownerName', 'phone', 'petName', 'speciesId', 'reason', 'date', 'time'],
     });
   }
-
   const appointment = {
     id: appointments.length + 1,
     ownerName,
@@ -259,10 +281,8 @@ router.post('/appointments', (req, res) => {
     status: 'pendiente',
     createdAt: new Date().toISOString(),
   };
-
   appointments.push(appointment);
   console.log('✅ Nueva cita creada:', appointment);
-
   res.status(201).json({
     success: true,
     message: 'Cita registrada con éxito. Te contactaremos para confirmar.',
@@ -271,3 +291,492 @@ router.post('/appointments', (req, res) => {
 });
 
 router.get('/appointments', (_req, res) => res.json(appointments));
+
+// ===========================================================================
+// RUTAS PÚBLICAS — Marketplace
+// ===========================================================================
+
+// Productos activos
+router.get('/products', async (_req, res) => {
+  try {
+    const products = await prisma.product.findMany({
+      where: { isActive: true },
+      orderBy: { createdAt: 'desc' },
+    });
+    res.json(products);
+  } catch (err) {
+    console.error('Error fetching products:', err);
+    res.status(500).json({ error: 'Error al cargar productos' });
+  }
+});
+
+// Categorías
+router.get('/categories', async (_req, res) => {
+  try {
+    const categories = await prisma.category.findMany({ orderBy: { name: 'asc' } });
+    res.json(categories);
+  } catch (err) {
+    console.error('Error fetching categories:', err);
+    res.status(500).json({ error: 'Error al cargar categorías' });
+  }
+});
+
+// Tasas de cambio
+router.get('/exchange-rates', async (_req, res) => {
+  try {
+    const rates = await prisma.exchangeRate.findMany();
+    res.json(rates);
+  } catch (err) {
+    console.error('Error fetching exchange rates:', err);
+    res.status(500).json({ error: 'Error al cargar tasas de cambio' });
+  }
+});
+
+// Configuración de métodos de pago (pública, solo activos)
+router.get('/payment-config', async (_req, res) => {
+  try {
+    const configs = await prisma.paymentConfig.findMany({
+      where: { isActive: true },
+    });
+    res.json(configs);
+  } catch (err) {
+    console.error('Error fetching payment config:', err);
+    res.status(500).json({ error: 'Error al cargar configuración de pagos' });
+  }
+});
+
+// ===========================================================================
+// RUTA: Crear orden (pedido)
+// ===========================================================================
+
+router.post('/orders/create', async (req, res) => {
+  try {
+    const { customerName, customerPhone, customerAddress, selectedCurrency, paymentMethod, items, proofDetails } = req.body;
+
+    // Validaciones básicas
+    if (!customerName || !customerPhone || !paymentMethod || !items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ error: 'Faltan campos obligatorios: customerName, customerPhone, paymentMethod, items' });
+    }
+
+    const validMethods = ['pago_movil', 'zelle', 'cash_usd', 'cash_cop'];
+    if (!validMethods.includes(paymentMethod)) {
+      return res.status(400).json({ error: 'Método de pago inválido' });
+    }
+
+    // Obtener tasas de cambio para calcular total en moneda seleccionada
+    const rates = await prisma.exchangeRate.findMany();
+    const rateMap = { USD: 1 };
+    rates.forEach((r) => {
+      rateMap[r.currencyCode] = Number(r.rateToUsd);
+    });
+
+    // Validar stock y calcular total en USD
+    let totalUsd = 0;
+    const orderItemsData = [];
+
+    for (const item of items) {
+      const product = await prisma.product.findUnique({ where: { id: item.productId } });
+      if (!product) {
+        return res.status(400).json({ error: `Producto con ID ${item.productId} no encontrado` });
+      }
+      if (!product.isActive) {
+        return res.status(400).json({ error: `El producto "${product.name}" no está disponible` });
+      }
+      if (product.stock < item.quantity) {
+        return res.status(400).json({
+          error: `Stock insuficiente para "${product.name}". Disponible: ${product.stock}, solicitado: ${item.quantity}`,
+        });
+      }
+
+      const priceUsd = Number(product.priceUsd);
+      totalUsd += priceUsd * item.quantity;
+      orderItemsData.push({
+        productId: item.productId,
+        quantity: item.quantity,
+        priceUsdAtPurchase: priceUsd,
+      });
+    }
+
+    // Calcular total en moneda seleccionada
+    const rate = rateMap[selectedCurrency] || 1;
+    const totalConverted = totalUsd * rate;
+
+    // Crear la orden en una transacción (descontar stock + crear orden)
+    const order = await prisma.$transaction(async (tx) => {
+      // Descontar stock
+      for (const item of orderItemsData) {
+        await tx.product.update({
+          where: { id: item.productId },
+          data: { stock: { decrement: item.quantity } },
+        });
+      }
+
+      // Crear orden
+      const newOrder = await tx.order.create({
+        data: {
+          customerName,
+          customerPhone,
+          customerAddress: customerAddress || null,
+          totalUsd,
+          selectedCurrency: selectedCurrency || 'USD',
+          totalInSelectedCurrency: totalConverted,
+          paymentMethod,
+          paymentStatus: 'pending',
+          paymentProofDetails: proofDetails || {},
+          items: {
+            create: orderItemsData.map((oi) => ({
+              productId: oi.productId,
+              quantity: oi.quantity,
+              priceUsdAtPurchase: oi.priceUsdAtPurchase,
+            })),
+          },
+        },
+        include: { items: true },
+      });
+
+      return newOrder;
+    });
+
+    console.log(`✅ Orden #${order.id} creada. Total: $${totalUsd} USD. Estado: pendiente`);
+
+    res.status(201).json({
+      success: true,
+      orderId: order.id,
+      message: 'Pedido registrado exitosamente. Está pendiente de verificación de pago.',
+    });
+  } catch (err) {
+    console.error('Error creating order:', err);
+    res.status(500).json({ error: 'Error interno al crear el pedido' });
+  }
+});
+
+// ===========================================================================
+// RUTAS ADMIN — Autenticación
+// ===========================================================================
+
+router.post('/admin/login', (req, res) => {
+  const { username, password } = req.body;
+  if (!username || !password) {
+    return res.status(400).json({ error: 'Usuario y contraseña requeridos' });
+  }
+
+  if (username !== ADMIN_USER || password !== ADMIN_PASS) {
+    return res.status(401).json({ error: 'Credenciales inválidas' });
+  }
+
+  const token = jwt.sign({ username, role: 'admin' }, JWT_SECRET, { expiresIn: '24h' });
+  res.json({ token, username, expiresIn: '24h' });
+});
+
+router.get('/admin/verify', authMiddleware, (req, res) => {
+  res.json({ valid: true, username: req.adminUser.username });
+});
+
+// ===========================================================================
+// RUTAS ADMIN — Tasas de cambio
+// ===========================================================================
+
+router.get('/admin/exchange-rates', authMiddleware, async (_req, res) => {
+  try {
+    const rates = await prisma.exchangeRate.findMany();
+    res.json(rates);
+  } catch (err) {
+    console.error('Error fetching admin rates:', err);
+    res.status(500).json({ error: 'Error al cargar tasas' });
+  }
+});
+
+router.put('/admin/exchange-rates', authMiddleware, async (req, res) => {
+  try {
+    const { rates } = req.body;
+    if (!Array.isArray(rates)) {
+      return res.status(400).json({ error: 'Formato inválido. Esperado: { rates: [{ currencyCode, rateToUsd }] }' });
+    }
+
+    for (const rate of rates) {
+      if (!rate.currencyCode || !rate.rateToUsd) continue;
+      await prisma.exchangeRate.upsert({
+        where: { currencyCode: rate.currencyCode },
+        update: { rateToUsd: rate.rateToUsd },
+        create: { currencyCode: rate.currencyCode, rateToUsd: rate.rateToUsd },
+      });
+    }
+
+    const updated = await prisma.exchangeRate.findMany();
+    res.json({ success: true, rates: updated });
+  } catch (err) {
+    console.error('Error updating rates:', err);
+    res.status(500).json({ error: 'Error al actualizar tasas' });
+  }
+});
+
+// ===========================================================================
+// RUTAS ADMIN — Órdenes
+// ===========================================================================
+
+router.get('/admin/orders', authMiddleware, async (req, res) => {
+  try {
+    const { status, method, search, limit, offset } = req.query;
+    const where = {};
+
+    if (status && ['pending', 'approved', 'rejected'].includes(status)) {
+      where.paymentStatus = status;
+    }
+    if (method && ['pago_movil', 'zelle', 'cash_usd', 'cash_cop'].includes(method)) {
+      where.paymentMethod = method;
+    }
+    if (search) {
+      where.OR = [
+        { customerName: { contains: search } },
+        { customerPhone: { contains: search } },
+      ];
+    }
+
+    const [orders, total] = await Promise.all([
+      prisma.order.findMany({
+        where,
+        include: {
+          items: {
+            include: { product: true },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+        take: limit ? Number(limit) : 50,
+        skip: offset ? Number(offset) : 0,
+      }),
+      prisma.order.count({ where }),
+    ]);
+
+    res.json({ orders, total });
+  } catch (err) {
+    console.error('Error fetching admin orders:', err);
+    res.status(500).json({ error: 'Error al cargar órdenes' });
+  }
+});
+
+router.post('/admin/orders/:id/approve', authMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const order = await prisma.order.findUnique({ where: { id: Number(id) } });
+
+    if (!order) {
+      return res.status(404).json({ error: 'Orden no encontrada' });
+    }
+    if (order.paymentStatus !== 'pending') {
+      return res.status(400).json({ error: `La orden ya está en estado "${order.paymentStatus}"` });
+    }
+
+    const updated = await prisma.order.update({
+      where: { id: Number(id) },
+      data: { paymentStatus: 'approved' },
+    });
+
+    console.log(`✅ Orden #${id} APROBADA. Stock ya fue descontado al crear la orden.`);
+    res.json({ success: true, order: updated });
+  } catch (err) {
+    console.error('Error approving order:', err);
+    res.status(500).json({ error: 'Error al aprobar la orden' });
+  }
+});
+
+router.post('/admin/orders/:id/reject', authMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const order = await prisma.order.findUnique({
+      where: { id: Number(id) },
+      include: { items: true },
+    });
+
+    if (!order) {
+      return res.status(404).json({ error: 'Orden no encontrada' });
+    }
+    if (order.paymentStatus !== 'pending') {
+      return res.status(400).json({ error: `La orden ya está en estado "${order.paymentStatus}"` });
+    }
+
+    // Al rechazar, devolvemos el stock
+    await prisma.$transaction(async (tx) => {
+      for (const item of order.items) {
+        await tx.product.update({
+          where: { id: item.productId },
+          data: { stock: { increment: item.quantity } },
+        });
+      }
+      await tx.order.update({
+        where: { id: Number(id) },
+        data: { paymentStatus: 'rejected' },
+      });
+    });
+
+    console.log(`❌ Orden #${id} RECHAZADA. Stock devuelto.`);
+    res.json({ success: true, message: 'Orden rechazada y stock devuelto' });
+  } catch (err) {
+    console.error('Error rejecting order:', err);
+    res.status(500).json({ error: 'Error al rechazar la orden' });
+  }
+});
+
+// ===========================================================================
+// RUTAS ADMIN — Resumen diario
+// ===========================================================================
+
+router.get('/admin/daily-summary', authMiddleware, async (req, res) => {
+  try {
+    const { date } = req.query;
+    const targetDate = date ? new Date(date) : new Date();
+    targetDate.setHours(0, 0, 0, 0);
+    const endDate = new Date(targetDate);
+    endDate.setDate(endDate.getDate() + 1);
+
+    const orders = await prisma.order.findMany({
+      where: {
+        createdAt: { gte: targetDate, lt: endDate },
+        paymentStatus: 'approved',
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    // Desglose por método de pago
+    const byMethod = {};
+    const byCurrency = {};
+    let totalUsd = 0;
+    let totalVes = 0;
+    let totalCop = 0;
+
+    for (const order of orders) {
+      const method = order.paymentMethod;
+      if (!byMethod[method]) {
+        byMethod[method] = { count: 0, totalUsd: 0 };
+      }
+      byMethod[method].count++;
+      byMethod[method].totalUsd += Number(order.totalUsd);
+
+      if (order.selectedCurrency === 'USD') totalUsd += Number(order.totalInSelectedCurrency);
+      if (order.selectedCurrency === 'VES') totalVes += Number(order.totalInSelectedCurrency);
+      if (order.selectedCurrency === 'COP') totalCop += Number(order.totalInSelectedCurrency);
+    }
+
+    byCurrency.USD = totalUsd;
+    byCurrency.VES = totalVes;
+    byCurrency.COP = totalCop;
+
+    res.json({
+      date: targetDate.toISOString().split('T')[0],
+      totalOrders: orders.length,
+      totalRevenueUsd: orders.reduce((sum, o) => sum + Number(o.totalUsd), 0),
+      byMethod,
+      byCurrency,
+      orders,
+    });
+  } catch (err) {
+    console.error('Error fetching daily summary:', err);
+    res.status(500).json({ error: 'Error al cargar resumen diario' });
+  }
+});
+
+// ===========================================================================
+// RUTAS ADMIN — Configuración de pagos
+// ===========================================================================
+
+router.get('/admin/payment-config', authMiddleware, async (_req, res) => {
+  try {
+    const configs = await prisma.paymentConfig.findMany({ orderBy: { method: 'asc' } });
+    res.json(configs);
+  } catch (err) {
+    console.error('Error fetching admin payment config:', err);
+    res.status(500).json({ error: 'Error al cargar configuración de pagos' });
+  }
+});
+
+router.put('/admin/payment-config/:id', authMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { label, bankName, accountHolder, accountNumber, phone, instructions, isActive } = req.body;
+
+    const updated = await prisma.paymentConfig.update({
+      where: { id: Number(id) },
+      data: {
+        ...(label !== undefined && { label }),
+        ...(bankName !== undefined && { bankName }),
+        ...(accountHolder !== undefined && { accountHolder }),
+        ...(accountNumber !== undefined && { accountNumber }),
+        ...(phone !== undefined && { phone }),
+        ...(instructions !== undefined && { instructions }),
+        ...(isActive !== undefined && { isActive }),
+      },
+    });
+
+    res.json({ success: true, config: updated });
+  } catch (err) {
+    console.error('Error updating payment config:', err);
+    res.status(500).json({ error: 'Error al actualizar configuración de pago' });
+  }
+});
+
+// ===========================================================================
+// RUTAS ADMIN — Productos (CRUD básico)
+// ===========================================================================
+
+router.get('/admin/products', authMiddleware, async (_req, res) => {
+  try {
+    const products = await prisma.product.findMany({
+      include: { category: true },
+      orderBy: { createdAt: 'desc' },
+    });
+    res.json(products);
+  } catch (err) {
+    console.error('Error fetching admin products:', err);
+    res.status(500).json({ error: 'Error al cargar productos' });
+  }
+});
+
+router.put('/admin/products/:id', authMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, description, priceUsd, stock, categoryId, imageUrl, isActive } = req.body;
+
+    const updated = await prisma.product.update({
+      where: { id: Number(id) },
+      data: {
+        ...(name !== undefined && { name }),
+        ...(description !== undefined && { description }),
+        ...(priceUsd !== undefined && { priceUsd }),
+        ...(stock !== undefined && { stock }),
+        ...(categoryId !== undefined && { categoryId }),
+        ...(imageUrl !== undefined && { imageUrl }),
+        ...(isActive !== undefined && { isActive }),
+      },
+    });
+
+    res.json({ success: true, product: updated });
+  } catch (err) {
+    console.error('Error updating product:', err);
+    res.status(500).json({ error: 'Error al actualizar producto' });
+  }
+});
+
+router.post('/admin/products', authMiddleware, async (req, res) => {
+  try {
+    const { name, description, priceUsd, stock, categoryId, imageUrl } = req.body;
+    if (!name || priceUsd === undefined || stock === undefined) {
+      return res.status(400).json({ error: 'name, priceUsd y stock son obligatorios' });
+    }
+
+    const product = await prisma.product.create({
+      data: {
+        name,
+        description: description || '',
+        priceUsd,
+        stock,
+        categoryId: categoryId || null,
+        imageUrl: imageUrl || null,
+        isActive: true,
+      },
+    });
+
+    res.status(201).json({ success: true, product });
+  } catch (err) {
+    console.error('Error creating product:', err);
+    res.status(500).json({ error: 'Error al crear producto' });
+  }
+});

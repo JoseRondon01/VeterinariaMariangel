@@ -3,16 +3,21 @@
   "version": "1.0.0",
   "description": "Aplicación web de Clínica Veterinaria - Node + Express + React + Vite + Tailwind",
   "private": true,
+  "type": "module",
   "engines": {
     "node": "24.x"
   },
   "scripts": {
-    "install:all": "npm install && cd server && npm install && cd ../client && npm install",
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install && cd ../api && npm install",
     "dev": "concurrently -n SERVER,CLIENT -c blue,green \"npm run dev:server\" \"npm run dev:client\"",
     "dev:server": "cd server && npm run dev",
     "dev:client": "cd client && npm run dev",
-    "build": "cd client && npm run build",
-    "start": "cd server && npm start"
+    "build": "cd client && npm install && npm run build",
+    "start": "cd server && npm start",
+    "render:build": "cd server && npm install && npx prisma generate && cd ../client && npm install && npm run build && cd ..",
+    "render:start": "set NODE_ENV=production&& cd server && node index.js",
+    "db:push": "cd server && npx prisma db push",
+    "db:generate": "cd server && npx prisma generate"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
