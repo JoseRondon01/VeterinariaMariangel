@@ -2,19 +2,37 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+// Mapeo: nombre del producto → archivo de imagen en /products/
+const productImageMap = {
+  'Purina Pro Plan Adulto 15kg': '/products/pro%20plan.png',
+  'Royal Canin Mini Adult 7.5kg': '/products/royal.png',
+  'Bravecto Comprimido 20-40kg': '/products/bravecto.png',
+  'Simparica Trio 10-20kg': '/products/simpirica.png',
+  'Collar Seresto Antipulgas Gato': '/products/seresto.png',
+  'Arnés Pechera Acolchado M': '/products/arnes.png',
+  'Shampoo Dermatológico Veterinario': '/products/champoo.png',
+  'Cepillo Dental + Pasta Enzimática': '/products/cepillo.png',
+  'Kong Classic Grande': '/products/kong.png',
+  'Pelota Lanzador con Sonido': '/products/pelota.png',
+};
+
 async function main() {
-  console.log('🔄 Estableciendo todas las imágenes a null...\n');
+  console.log('🖼️ Asociando imágenes reales a cada producto...\n');
 
-  // Poner todas las imágenes a null para activar el fallback del ProductCard
-  const result = await prisma.product.updateMany({
-    data: { imageUrl: null },
-  });
+  for (const [name, imageUrl] of Object.entries(productImageMap)) {
+    const product = await prisma.product.findFirst({ where: { name } });
+    if (product) {
+      await prisma.product.update({
+        where: { id: product.id },
+        data: { imageUrl },
+      });
+      console.log(`  ✅ ${name.padEnd(42)} → ${imageUrl}`);
+    } else {
+      console.log(`  ⚠️ No encontrado: ${name}`);
+    }
+  }
 
-  console.log(`  ✅ ${result.count} productos actualizados (imageUrl = null)`);
-  console.log('\n📸 El ProductCard mostrará un gradiente con ícono por defecto.');
-  console.log('   Para añadir imágenes reales, sube fotos a client/public/products/');
-  console.log('   y actualiza la BD con rutas como: /products/purina-pro-plan.png');
-  console.log('\n   Recarga: https://veterinariamariangel.onrender.com/tienda');
+  console.log('\n🎉 10 productos con imágenes reales!');
 }
 
 main()
