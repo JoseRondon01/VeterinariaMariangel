@@ -885,3 +885,14 @@ router.post('/admin/products', authMiddleware, async (req, res) => {
     res.status(500).json({ error: 'Error al crear producto' });
   }
 });
+
+router.delete('/admin/products/:id', authMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+    await prisma.product.delete({ where: { id: Number(id) } });
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error deleting product:', err);
+    res.status(500).json({ error: 'Error al eliminar producto' });
+  }
+});

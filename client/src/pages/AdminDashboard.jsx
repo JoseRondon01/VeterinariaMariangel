@@ -684,6 +684,211 @@ function BusinessInfoManager() {
 }
 
 // ===========================================================================
+// Componente: ProductManager
+// ===========================================================================
+function ProductManager() {
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState('');
+  const [editingId, setEditingId] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+
+  // Form state
+  const [formName, setFormName] = useState('');
+  const [formDesc, setFormDesc] = useState('');
+  const [formPrice, setFormPrice] = useState('');
+  const [formStock, setFormStock] = useState('');
+  const [formCatId, setFormCatId] = useState('');
+  const [formImg, setFormImg] = useState('');
+  const [formActive, setFormActive] = useState(true);
+
+  const resetForm = () => {
+    setFormName(''); setFormDesc(''); setFormPrice(''); setFormStock('');
+    setFormCatId(''); setFormImg(''); setFormActive(true); setEditingId(null); setShowForm(false);
+  };
+
+  const openNew = () => { resetForm(); setShowForm(true); };
+
+  const openEdit = (p) => {
+    setEditingId(p.id);
+    setFormName(p.name);
+    setFormDesc(p.description || '');
+    setFormPrice(String(p.priceUsd || 0));
+    setFormStock(String(p.stock || 0));
+    setFormCatId(p.categoryId ? String(p.categoryId) : '');
+    setFormImg(p.imageUrl || '');
+    setFormActive(p.isActive);
+    setShowForm(true);
+  };
+
+  const fetchProducts = () => {
+    setLoading(true);
+    Promise.all([
+      fetch('/api/admin/products', { headers: API_HEADERS() }).then((r) => r.json()),
+      fetch('/api/categories').then((r) => r.json()).catch(() => []),
+    ])
+      .then(([prods, cats]) => {
+        setProducts(Array.isArray(prods) ? prods : []);
+        setCategories(Array.isArray(cats) ? cats : []);
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => { fetchProducts(); }, []);
+
+  const handleSave = async () => {
+    if (!formName.trim() || !formPrice || !formStock) {
+      setMsg('❌ Nombre, precio y stock son obligatorios');
+      setTimeout(() => setMsg(''), 3000);
+      return;
+    }
+    setSaving(true); setMsg('');
+    try {
+      const body = {
+        name: formName.trim(),
+        description: formDesc.trim(),
+        priceUsd: Number(formPrice),
+        stock: Number(formStock),
+        categoryId: formCatId ? Number(formCatId) : null,
+        imageUrl: formImg.trim() || null,
+        isActive: formActive,
+      };
+      const url = editingId ? `/api/admin/products/${editingId}` : '/api/admin/products';
+      const method = editingId ? 'PUT' : 'POST';
+      const res = await fetch(url, { method, headers: API_HEADERS(), body: JSON.stringify(body) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setMsg(editingId ? '✅ Producto actualizado' : '✅ Producto creado');
+      resetForm();
+      fetchProducts();
+    } catch (err) { setMsg('❌ Error: ' + err.message); }
+    finally { setSaving(false); setTimeout(() => setMsg(''), 4000); }
+  };
+
+  const handleDelete = async (id, name) => {
+    if (!confirm(`¿Eliminar "${name}"? Esta acción no se puede deshacer.`)) return;
+    try {
+      const res = await fetch(`/api/admin/products/${id}`, { method: 'DELETE', headers: API_HEADERS() });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      fetchProducts();
+    } catch (err) { alert('Error: ' + err.message); }
+  };
+
+  const formatUsd = (v) => `$ ${Number(v || 0).toFixed(2)}`;
+
+  return (
+    <div className="bg-white rounded-2xl shadow-md p-6">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-extrabold text-slate-800 flex items-center gap-2">
+          <span>📦</span> Gestión de Productos
+        </h2>
+        <button onClick={openNew} className="px-4 py-2 bg-medical-600 text-white rounded-xl font-bold text-sm hover:bg-medical-700 transition">
+          + Nuevo Producto
+        </button>
+      </div>
+
+      {msg && <div className={`mb-4 p-3 rounded-xl text-sm font-medium ${msg.startsWith('✅') ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>{msg}</div>}
+
+      {/* Formulario */}
+      {showForm && (
+        <div className="mb-6 border border-slate-200 rounded-xl p-4 bg-slate-50">
+          <h3 className="font-bold text-slate-700 text-sm mb-3">{editingId ? 'Editar Producto' : 'Nuevo Producto'}</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Nombre *</label>
+              <input type="text" value={formName} onChange={(e) => setFormName(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Precio (USD) *</label>
+              <input type="number" step="0.01" value={formPrice} onChange={(e) => setFormPrice(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Stock *</label>
+              <input type="number" value={formStock} onChange={(e) => setFormStock(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Categoría</label>
+              <select value={formCatId} onChange={(e) => setFormCatId(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-medical-500 outline-none">
+                <option value="">Sin categoría</option>
+                {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-medium text-slate-500 mb-1">Descripción</label>
+              <textarea value={formDesc} onChange={(e) => setFormDesc(e.target.value)} rows="2" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-medium text-slate-500 mb-1">URL de Imagen</label>
+              <input type="text" value={formImg} onChange={(e) => setFormImg(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+            </div>
+            <div className="flex items-center gap-2">
+              <input type="checkbox" id="prod-active" checked={formActive} onChange={(e) => setFormActive(e.target.checked)} className="accent-medical-600 w-4 h-4" />
+              <label htmlFor="prod-active" className="text-sm text-slate-600">Producto activo (visible en tienda)</label>
+            </div>
+          </div>
+          <div className="flex gap-2 mt-4">
+            <button onClick={handleSave} disabled={saving} className="px-5 py-2 bg-medical-600 text-white rounded-xl font-bold text-sm hover:bg-medical-700 transition disabled:opacity-50">{saving ? 'Guardando...' : (editingId ? 'Actualizar' : 'Crear')}</button>
+            <button onClick={resetForm} className="px-5 py-2 border border-slate-200 rounded-xl text-sm text-slate-600 hover:bg-slate-100 transition">Cancelar</button>
+          </div>
+        </div>
+      )}
+
+      {/* Tabla */}
+      {loading ? <div className="animate-pulse space-y-2">{[1,2,3].map(i=><div key={i} className="bg-slate-100 h-16 rounded-xl"/>)}</div>
+      : products.length === 0 ? <div className="text-center py-8 text-slate-400"><p className="text-3xl mb-2">📦</p><p>No hay productos registrados.</p></div>
+      : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead><tr className="border-b border-slate-200 text-left text-slate-500">
+              <th className="py-2 pr-2 font-medium">Producto</th>
+              <th className="py-2 pr-2 font-medium">Categoría</th>
+              <th className="py-2 pr-2 font-medium">Precio USD</th>
+              <th className="py-2 pr-2 font-medium">Stock</th>
+              <th className="py-2 pr-2 font-medium">Estado</th>
+              <th className="py-2 font-medium">Acciones</th>
+            </tr></thead>
+            <tbody>
+              {products.map((p) => (
+                <tr key={p.id} className="border-b border-slate-100 hover:bg-slate-50">
+                  <td className="py-3 pr-2">
+                    <div className="flex items-center gap-2">
+                      {p.imageUrl ? <img src={p.imageUrl} alt={p.name} className="w-10 h-10 rounded-lg object-cover" /> : <span className="w-10 h-10 rounded-lg bg-slate-200 flex items-center justify-center text-xs text-slate-400">📷</span>}
+                      <span className="font-medium text-slate-800">{p.name}</span>
+                    </div>
+                  </td>
+                  <td className="py-3 pr-2 text-slate-600">{p.category?.name || '—'}</td>
+                  <td className="py-3 pr-2 font-medium text-slate-700">{formatUsd(p.priceUsd)}</td>
+                  <td className="py-3 pr-2">
+                    <span className={`font-bold ${(p.stock ?? 0) <= 0 ? 'text-red-600' : (p.stock ?? 0) <= 5 ? 'text-emergency-600' : 'text-green-600'}`}>
+                      {p.stock ?? 0}
+                    </span>
+                  </td>
+                  <td className="py-3 pr-2">
+                    <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-bold ${p.isActive ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
+                      {p.isActive ? 'Activo' : 'Inactivo'}
+                    </span>
+                  </td>
+                  <td className="py-3">
+                    <div className="flex gap-1">
+                      <button onClick={() => openEdit(p)} className="px-3 py-1.5 bg-slate-100 text-slate-700 text-xs rounded-lg font-medium hover:bg-slate-200 transition">Editar</button>
+                      <button onClick={() => handleDelete(p.id, p.name)} className="px-3 py-1.5 bg-red-50 text-red-600 text-xs rounded-lg font-medium hover:bg-red-100 transition">Eliminar</button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ===========================================================================
 // Componente: DailySummary
 // ===========================================================================
 function DailySummary() {
@@ -828,6 +1033,7 @@ export default function AdminDashboard() {
 
   const tabs = [
     { id: 'business', label: 'Info Negocio', icon: '🏢' },
+    { id: 'products', label: 'Productos', icon: '📦' },
     { id: 'orders', label: 'Verificar Pagos', icon: '📋' },
     { id: 'summary', label: 'Resumen Diario', icon: '📊' },
     { id: 'rates', label: 'Tasas de Cambio', icon: '💱' },
@@ -885,6 +1091,7 @@ export default function AdminDashboard() {
 
         {/* Contenido del tab */}
         {activeTab === 'business' && <BusinessInfoManager />}
+        {activeTab === 'products' && <ProductManager />}
         {activeTab === 'orders' && <OrderVerificationTable />}
         {activeTab === 'summary' && <DailySummary />}
         {activeTab === 'rates' && <RateManager />}

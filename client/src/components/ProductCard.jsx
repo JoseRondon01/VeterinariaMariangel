@@ -36,12 +36,16 @@ export default function ProductCard({ product }) {
         <span className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-xs font-bold px-2 py-1 rounded-full shadow text-slate-600">
           {selectedCurrency}
         </span>
-        {/* Stock bajo */}
-        {!outOfStock && product.stock <= 5 && (
+        {/* Stock indicator */}
+        {!outOfStock && product.stock <= 5 ? (
           <span className="absolute top-3 left-3 bg-emergency-500 text-white text-xs font-bold px-2 py-1 rounded-full">
             ¡Últimas {product.stock}!
           </span>
-        )}
+        ) : !outOfStock ? (
+          <span className="absolute top-3 left-3 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+            {product.stock} en stock
+          </span>
+        ) : null}
         {/* Agotado overlay */}
         {outOfStock && (
           <div className="absolute inset-0 bg-slate-900/60 flex items-center justify-center">
