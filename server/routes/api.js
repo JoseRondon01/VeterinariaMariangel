@@ -1,9 +1,22 @@
 import { Router } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import multer from 'multer';
+import cloudinary from '../config/cloudinary.js';
 import { prisma } from '../index.js';
 
 export const router = Router();
+
+// Multer config: guarda en memoria (pasamos a Cloudinary directamente)
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
+  fileFilter: (_req, file, cb) => {
+    const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (allowed.includes(file.mimetype)) cb(null, true);
+    else cb(new Error('Formato no permitido. Usa JPG, PNG, WEBP o GIF.'));
+  },
+});
 
 // ===========================================================================
 // Middleware de autenticación JWT para rutas admin
@@ -894,5 +907,22 @@ router.delete('/admin/products/:id', authMiddleware, async (req, res) => {
   } catch (err) {
     console.error('Error deleting product:', err);
     res.status(500).json({ error: 'Error al eliminar producto' });
+  }
+});
+
+// Upload image to Cloudinary
+router.post("/admin/upload", authMiddleware, upload.single("image"), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: "No se recibi\u00f3 ninguna imagen" });
+    const result = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        { folder: "veterinaria-mariangel/products", resource_type: "image", transformation: [{ quality: "auto", fetch_format: "auto" }] },
+        (error, result) => { if (error) reject(error); else resolve(result); }
+      );
+      stream.end(req.file.buffer);
+    });
+    res.json({ success: true, url: result.secure_url, publicId: result.public_id });
+  } catch (err) {
+    res.status(500).json({ error: err.message || "Error al subir imagen" });
   }
 });

@@ -706,7 +706,7 @@ function ProductManager() {
 
   const resetForm = () => {
     setFormName(''); setFormDesc(''); setFormPrice(''); setFormStock('');
-    setFormCatId(''); setFormImg(''); setFormActive(true); setEditingId(null); setShowForm(false);
+    setFormCatId(''); setFormImg(''); setFormImgPreview(null); setFormActive(true); setEditingId(null); setShowForm(false);
   };
 
   const openNew = () => { resetForm(); setShowForm(true); };
