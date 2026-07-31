@@ -10,6 +10,191 @@ const API_HEADERS = () => {
 };
 
 // ===========================================================================
+// Componente: ServiceManager
+// ===========================================================================
+function ServiceManager() {
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+  const [msg, setMsg] = useState('');
+
+  const [formId, setFormId] = useState('');
+  const [formTitle, setFormTitle] = useState('');
+  const [formDesc, setFormDesc] = useState('');
+  const [formIcon, setFormIcon] = useState('');
+  const [formFeatures, setFormFeatures] = useState('');
+
+  const iconOptions = [
+    { value: 'stethoscope', label: '🩺 Estetoscopio' },
+    { value: 'scalpel', label: '🔪 Cirugía' },
+    { value: 'scissors', label: '✂️ Peluquería' },
+    { value: 'flask', label: '🧪 Laboratorio' },
+    { value: 'paw', label: '🐾 Mascota' },
+    { value: 'alert', label: '🚨 Urgencias' },
+    { value: 'heart', label: '❤️ Corazón' },
+    { value: 'bone', label: '🦴 Hueso' },
+    { value: 'eye', label: '👁️ Oftalmología' },
+    { value: 'tooth', label: '🦷 Dental' },
+    { value: 'syringe', label: '💉 Inyección' },
+    { value: 'pill', label: '💊 Medicamentos' },
+    { value: 'star', label: '⭐ Especial' },
+  ];
+
+  const fetchServices = () => {
+    setLoading(true);
+    fetch('/api/admin/services', { headers: API_HEADERS() })
+      .then((r) => r.json())
+      .then((data) => setServices(Array.isArray(data) ? data : []))
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => { fetchServices(); }, []);
+
+  const resetForm = () => {
+    setFormId(''); setFormTitle(''); setFormDesc(''); setFormIcon(''); setFormFeatures('');
+    setEditingId(null); setShowForm(false);
+  };
+
+  const openNew = () => { resetForm(); setShowForm(true); };
+
+  const openEdit = (s) => {
+    setEditingId(s.id);
+    setFormId(s.id);
+    setFormTitle(s.title || '');
+    setFormDesc(s.description || '');
+    setFormIcon(s.icon || '');
+    setFormFeatures(Array.isArray(s.features) ? s.features.join('\n') : '');
+    setShowForm(true);
+  };
+
+  const handleSave = async () => {
+    if (!formId.trim() || !formTitle.trim()) {
+      setMsg('❌ Slug (ID) y título son obligatorios');
+      setTimeout(() => setMsg(''), 3000);
+      return;
+    }
+    setSaving(true); setMsg('');
+    try {
+      const body = {
+        id: formId.trim().toLowerCase().replace(/\s+/g, '-'),
+        title: formTitle.trim(),
+        description: formDesc.trim(),
+        icon: formIcon,
+        features: formFeatures.trim() ? formFeatures.split('\n').map((f) => f.trim()).filter(Boolean) : [],
+      };
+      const url = editingId ? `/api/admin/services/${editingId}` : '/api/admin/services';
+      const method = editingId ? 'PUT' : 'POST';
+      const res = await fetch(url, { method, headers: API_HEADERS(), body: JSON.stringify(body) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setMsg(editingId ? '✅ Servicio actualizado' : '✅ Servicio creado');
+      resetForm();
+      fetchServices();
+    } catch (err) { setMsg('❌ Error: ' + err.message); }
+    finally { setSaving(false); setTimeout(() => setMsg(''), 4000); }
+  };
+
+  const handleDelete = async (id, title) => {
+    if (!confirm(`¿Eliminar "${title}"?`)) return;
+    try {
+      const res = await fetch(`/api/admin/services/${id}`, { method: 'DELETE', headers: API_HEADERS() });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      fetchServices();
+    } catch (err) { alert('Error: ' + err.message); }
+  };
+
+  if (loading) return <div className="animate-pulse bg-slate-100 h-64 rounded-xl" />;
+
+  return (
+    <div className="bg-white rounded-2xl shadow-md p-6">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-extrabold text-slate-800 flex items-center gap-2">
+          <span>🩺</span> Gestión de Servicios
+        </h2>
+        <button onClick={openNew} className="px-4 py-2 bg-medical-600 text-white rounded-xl font-bold text-sm hover:bg-medical-700 transition">
+          + Nuevo Servicio
+        </button>
+      </div>
+      <p className="text-xs text-slate-400 mb-4">Edita los servicios que aparecen en la sección "Nuestros Servicios" del sitio web.</p>
+
+      {msg && <div className={`mb-4 p-3 rounded-xl text-sm font-medium ${msg.startsWith('✅') ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>{msg}</div>}
+
+      {showForm && (
+        <div className="mb-6 border border-slate-200 rounded-xl p-4 bg-slate-50">
+          <h3 className="font-bold text-slate-700 text-sm mb-3">{editingId ? 'Editar Servicio' : 'Nuevo Servicio'}</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Slug ID * (ej: consultas)</label>
+              <input type="text" value={formId} onChange={(e) => setFormId(e.target.value)} disabled={!!editingId}
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none disabled:bg-slate-100" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Título *</label>
+              <input type="text" value={formTitle} onChange={(e) => setFormTitle(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Icono</label>
+              <select value={formIcon} onChange={(e) => setFormIcon(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-medical-500 outline-none">
+                <option value="">Sin icono</option>
+                {iconOptions.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Características (una por línea)</label>
+              <textarea value={formFeatures} onChange={(e) => setFormFeatures(e.target.value)} rows="3"
+                placeholder="Examen físico completo&#10;Diagnóstico por imagen&#10;Seguimiento veterinario"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-medium text-slate-500 mb-1">Descripción</label>
+              <textarea value={formDesc} onChange={(e) => setFormDesc(e.target.value)} rows="2"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+            </div>
+          </div>
+          <div className="flex gap-2 mt-4">
+            <button onClick={handleSave} disabled={saving} className="px-5 py-2 bg-medical-600 text-white rounded-xl font-bold text-sm hover:bg-medical-700 transition disabled:opacity-50">
+              {saving ? 'Guardando...' : (editingId ? 'Actualizar' : 'Crear')}
+            </button>
+            <button onClick={resetForm} className="px-5 py-2 border border-slate-200 rounded-xl text-sm text-slate-600 hover:bg-slate-100 transition">Cancelar</button>
+          </div>
+        </div>
+      )}
+
+      {services.length === 0 ? (
+        <div className="text-center py-8 text-slate-400"><p className="text-3xl mb-2">🩺</p><p>No hay servicios registrados.</p></div>
+      ) : (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {services.map((s) => (
+            <div key={s.id} className="border border-slate-200 rounded-xl p-4 hover:shadow-md transition">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xl">{s.icon === 'stethoscope' ? '🩺' : s.icon === 'scalpel' ? '🔪' : s.icon === 'scissors' ? '✂️' : s.icon === 'flask' ? '🧪' : s.icon === 'paw' ? '🐾' : s.icon === 'alert' ? '🚨' : s.icon === 'heart' ? '❤️' : s.icon === 'bone' ? '🦴' : s.icon === 'eye' ? '👁️' : s.icon === 'tooth' ? '🦷' : s.icon === 'syringe' ? '💉' : s.icon === 'pill' ? '💊' : s.icon === 'star' ? '⭐' : '📋'}</span>
+                <h3 className="font-bold text-slate-800 text-sm">{s.title}</h3>
+              </div>
+              <p className="text-xs text-slate-500 line-clamp-2 mb-2">{s.description}</p>
+              {s.features && s.features.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {s.features.map((f, i) => <span key={i} className="chip bg-slate-100 text-slate-600 text-xs">{f}</span>)}
+                </div>
+              )}
+              <div className="flex gap-1 mt-3">
+                <button onClick={() => openEdit(s)} className="flex-1 px-3 py-1.5 bg-slate-100 text-slate-700 text-xs rounded-lg font-medium hover:bg-slate-200 transition">Editar</button>
+                <button onClick={() => handleDelete(s.id, s.title)} className="px-3 py-1.5 bg-red-50 text-red-600 text-xs rounded-lg font-medium hover:bg-red-100 transition">Eliminar</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ===========================================================================
 // Componente: RateManager
 // ===========================================================================
 function RateManager() {
@@ -1736,6 +1921,7 @@ export default function AdminDashboard() {
 
   const tabs = [
     { id: 'business', label: 'Info Negocio', icon: '🏢' },
+    { id: 'services', label: 'Servicios', icon: '🩺' },
     { id: 'team', label: 'Equipo', icon: '👥' },
     { id: 'blog', label: 'Consejos', icon: '📝' },
     { id: 'testimonials', label: 'Reseñas', icon: '⭐' },
@@ -1797,6 +1983,7 @@ export default function AdminDashboard() {
 
         {/* Contenido del tab */}
         {activeTab === 'business' && <BusinessInfoManager />}
+        {activeTab === 'services' && <ServiceManager />}
         {activeTab === 'team' && <TeamManager />}
         {activeTab === 'blog' && <BlogManager />}
         {activeTab === 'testimonials' && <TestimonialManager />}

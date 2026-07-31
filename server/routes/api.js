@@ -258,7 +258,30 @@ const appointments = [];
 // RUTAS PÚBLICAS — Veterinaria (existentes)
 // ===========================================================================
 
-router.get('/services', (_req, res) => res.json(services));
+const adminServiceStore = services.map((s) => ({ ...s }));
+
+router.get('/services', async (_req, res) => {
+  try {
+    const dbServices = await prisma.service.findMany({
+      where: { active: true },
+      orderBy: { id: 'asc' },
+    });
+    if (dbServices.length > 0) {
+      const mapped = dbServices.map((s) => ({
+        id: s.slug,
+        title: s.title,
+        description: s.description,
+        icon: s.icon,
+        features: s.features || [],
+      }));
+      return res.json(mapped);
+    }
+    res.json(adminServiceStore);
+  } catch (err) {
+    console.error('Error fetching services from DB, fallback to memory:', err.message);
+    res.json(adminServiceStore);
+  }
+});
 router.get('/team', async (_req, res) => {
   try {
     const veterinarians = await prisma.veterinarian.findMany({ where: { active: true } });
@@ -1277,6 +1300,84 @@ router.delete('/admin/testimonials/:id', authMiddleware, async (req, res) => {
   } catch (err) {
     console.error('Error deleting testimonial:', err);
     res.status(500).json({ error: 'Error al eliminar testimonio' });
+  }
+});
+
+// ===========================================================================
+// RUTAS ADMIN — Gestión de Servicios
+// ===========================================================================
+
+router.get('/admin/services', authMiddleware, async (_req, res) => {
+  try {
+    const dbServices = await prisma.service.findMany({ orderBy: { id: 'asc' } });
+    if (dbServices.length > 0) {
+      const mapped = dbServices.map((s) => ({ id: s.slug, title: s.title, description: s.description, icon: s.icon, features: s.features || [] }));
+      return res.json(mapped);
+    }
+    res.json(adminServiceStore);
+  } catch (err) {
+    console.error('Error fetching admin services, fallback to memory:', err.message);
+    res.json(adminServiceStore);
+  }
+});
+
+router.put('/admin/services/:id', authMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, description, icon, features } = req.body;
+    try {
+      const data = { ...(title !== undefined && { title }), ...(description !== undefined && { description }), ...(icon !== undefined && { icon }), ...(features !== undefined && { features }) };
+      const updated = await prisma.service.update({ where: { slug: id }, data });
+      return res.json({ success: true, service: { id: updated.slug, title: updated.title, description: updated.description, icon: updated.icon, features: updated.features } });
+    } catch (dbErr) {
+      const member = adminServiceStore.find((s) => s.id === id);
+      if (!member) return res.status(404).json({ error: 'Servicio no encontrado' });
+      if (title !== undefined) member.title = title;
+      if (description !== undefined) member.description = description;
+      if (icon !== undefined) member.icon = icon;
+      if (features !== undefined) member.features = features;
+      console.log(`✅ Servicio "${id}" actualizado en memoria`);
+      return res.json({ success: true, service: member });
+    }
+  } catch (err) {
+    console.error('Error updating service:', err);
+    res.status(500).json({ error: 'Error al actualizar servicio' });
+  }
+});
+
+router.post('/admin/services', authMiddleware, async (req, res) => {
+  try {
+    const { id, title, description, icon, features } = req.body;
+    if (!id || !title) return res.status(400).json({ error: 'id y title son obligatorios' });
+    try {
+      const created = await prisma.service.create({ data: { slug: id, title, description: description || '', icon: icon || '', features: features || [] } });
+      return res.status(201).json({ success: true, service: { id: created.slug, title: created.title, description: created.description, icon: created.icon, features: created.features } });
+    } catch (dbErr) {
+      const newService = { id, title, description: description || '', icon: icon || '', features: features || [] };
+      adminServiceStore.push(newService);
+      return res.status(201).json({ success: true, service: newService });
+    }
+  } catch (err) {
+    console.error('Error creating service:', err);
+    res.status(500).json({ error: 'Error al crear servicio' });
+  }
+});
+
+router.delete('/admin/services/:id', authMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+    try {
+      await prisma.service.update({ where: { slug: id }, data: { active: false } });
+      return res.json({ success: true });
+    } catch (dbErr) {
+      const idx = adminServiceStore.findIndex((s) => s.id === id);
+      if (idx === -1) return res.status(404).json({ error: 'Servicio no encontrado' });
+      adminServiceStore.splice(idx, 1);
+      return res.json({ success: true });
+    }
+  } catch (err) {
+    console.error('Error deleting service:', err);
+    res.status(500).json({ error: 'Error al eliminar servicio' });
   }
 });
 
