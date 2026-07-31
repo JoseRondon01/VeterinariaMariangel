@@ -276,11 +276,11 @@ router.get('/team', async (_req, res) => {
       }));
       return res.json(mapped);
     }
-    // Fallback al array en memoria si no hay datos en BD
-    res.json(team);
+    // Fallback al array en memoria (adminTeamStore, que puede tener cambios del admin)
+    res.json(adminTeamStore);
   } catch (err) {
     console.error('Error fetching team from DB, fallback to memory:', err.message);
-    res.json(team);
+    res.json(adminTeamStore);
   }
 });
 router.get('/testimonials', (_req, res) => res.json(testimonials));
@@ -980,12 +980,25 @@ router.put('/admin/team/:id', authMiddleware, async (req, res) => {
       const member = adminTeamStore.find((v) => v.id === Number(id));
       if (!member) return res.status(404).json({ error: 'Veterinario no encontrado' });
       if (fullName !== undefined) member.name = fullName;
+      if (role !== undefined) member.role = role;
+      if (specialty !== undefined) member.specialty = specialty;
+      if (experience !== undefined) member.experience = experience;
+      if (bio !== undefined) member.bio = bio;
+      if (certifications !== undefined) member.certifications = certifications;
       if (image !== undefined) member.image = image;
-      console.log(`✅ Veterinario #${id} actualizado en memoria: ${member.name}`);
+      console.log(`✅ Veterinario #${id} actualizado en memoria: ${member.name}, ${member.role}, ${member.specialty}`);
       return res.json({
         success: true,
         veterinarian: {
-          id: Number(id), fullName: member.name, image: member.image, certifications: [],
+          id: Number(id),
+          fullName: member.name,
+          role: member.role,
+          specialty: member.specialty,
+          experience: member.experience,
+          bio: member.bio,
+          certifications: member.certifications || [],
+          image: member.image,
+          active: true,
           createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
         },
       });
