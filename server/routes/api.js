@@ -199,7 +199,7 @@ const blog = [
     category: 'Salud Preventiva',
     date: '2026-07-05',
     readingTime: '4 min',
-    image: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dea?w=800&h=500&fit=crop',
+    image: 'https://images.unsplash.com/photo-1574158622682-e40e69881006?w=800&h=500&fit=crop',
     content: 'La salud dental felina es frecuentemente subestimada. Una higiene adecuada previene dolor crónico...',
   },
   {
