@@ -170,29 +170,22 @@ export default function Navbar() {
                 )}
               </button>
 
-              {/* Botón de Emergencia */}
-              <a
-                href={EMERGENCY_TEL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-emergency text-sm px-4 py-2.5"
-                aria-label={`WhatsApp de emergencia ${EMERGENCY_PHONE}`}
+              {/* Botón de Servicios */}
+              <Link
+                to="/#servicios"
+                className="btn-secondary text-sm px-4 py-2.5"
+                aria-label="Ver servicios veterinarios"
               >
-                <svg
-                  className="w-5 h-5"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.771-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.182-.988-.332-2.597-1.108-4.296-3.771-4.425-3.945-.13-.175-.946-1.257-.946-2.397 0-1.14.599-1.701.811-1.933.212-.232.462-.29.616-.29.154 0 .308.002.443.01.144.007.332-.054.519.396.186.449.637 1.553.694 1.664.057.111.11.242.033.387-.077.145-.116.235-.232.358-.116.123-.243.275-.348.37-.116.098-.237.205-.101.406.136.201.606 1.001 1.301 1.621.894.797 1.646 1.044 1.881 1.16.235.116.372.097.511-.056.139-.153.596-.694.755-.933.159-.239.318-.199.539-.119.221.08 1.398.658 1.638.779.24.121.4.18.458.283.058.103.058.594-.086.999z" />
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                 </svg>
                 <span className="flex flex-col items-start leading-tight">
                   <span className="text-[10px] font-normal opacity-90">
-                    Emergencia 24/7
+                    Nuestros
                   </span>
-                  <span className="font-bold">WhatsApp</span>
+                  <span className="font-bold">Servicios</span>
                 </span>
-              </a>
+              </Link>
 
               <button
                 onClick={openBooking}
@@ -310,29 +303,23 @@ export default function Navbar() {
                   Agendar Cita
                 </button>
 
-                {/* Botón emergencia móvil - 100% táctil, alto contraste */}
-                <a
-                  href={EMERGENCY_TEL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-emergency w-full"
-                  aria-label={`WhatsApp de emergencia ${EMERGENCY_PHONE}`}
+                {/* Botón Servicios móvil */}
+                <Link
+                  to="/#servicios"
+                  onClick={handleNavClick}
+                  className="btn-secondary w-full"
+                  aria-label="Ver servicios veterinarios"
                 >
-                  <svg
-                    className="w-5 h-5"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                  >
-                    <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.771-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.182-.988-.332-2.597-1.108-4.296-3.771-4.425-3.945-.13-.175-.946-1.257-.946-2.397 0-1.14.599-1.701.811-1.933.212-.232.462-.29.616-.29.154 0 .308.002.443.01.144.007.332-.054.519.396.186.449.637 1.553.694 1.664.057.111.11.242.033.387-.077.145-.116.235-.232.358-.116.123-.243.275-.348.37-.116.098-.237.205-.101.406.136.201.606 1.001 1.301 1.621.894.797 1.646 1.044 1.881 1.16.235.116.372.097.511-.056.139-.153.596-.694.755-.933.159-.239.318-.199.539-.119.221.08 1.398.658 1.638.779.24.121.4.18.458.283.058.103.058.594-.086.999z" />
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                   </svg>
                   <span className="flex flex-col items-start leading-tight">
                     <span className="text-xs font-normal opacity-90">
-                      Emergencia 24/7
+                      Nuestros
                     </span>
-                    <span className="font-bold">WhatsApp</span>
+                    <span className="font-bold">Servicios</span>
                   </span>
-                </a>
+                </Link>
               </div>
             </div>
           </div>
