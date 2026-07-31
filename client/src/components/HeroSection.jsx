@@ -1,6 +1,6 @@
 import { useBooking } from './BookingContext.jsx';
 
-const EMERGENCY_TEL = 'tel:+582125550199';
+const EMERGENCY_TEL = 'https://api.whatsapp.com/send/?phone=541127258138&text&type=phone_number&app_absent=0';
 
 export default function HeroSection() {
   const { openBooking } = useBooking();

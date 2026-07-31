@@ -1,8 +1,5 @@
-const WHATSAPP_NUMBER = '584125550199'; // Formato internacional sin + ni espacios
-const WHATSAPP_MESSAGE = encodeURIComponent(
-  '¡Hola! Quisiera información sobre los servicios de Veterinaria Mariangel 🐾'
-);
-const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MESSAGE}`;
+const WHATSAPP_NUMBER = '541127258138'; // ARG: +54 11 2725-8138
+const WHATSAPP_URL = `https://api.whatsapp.com/send/?phone=${WHATSAPP_NUMBER}&text&type=phone_number&app_absent=0`;
 
 export default function WhatsAppButton() {
   return (
