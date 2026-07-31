@@ -17,26 +17,26 @@ function HeroManager() {
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState('');
 
-  const [badgeText, setBadgeText] = useState('');
-  const [titleLine1, setTitleLine1] = useState('');
-  const [titleHighlight, setTitleHighlight] = useState('');
-  const [subtitle, setSubtitle] = useState('');
-  const [ctaPrimary, setCtaPrimary] = useState('');
-  const [ctaSecondary, setCtaSecondary] = useState('');
-  const [heroImage, setHeroImage] = useState('');
+  const [badgeText, setBadgeText] = useState('Urgencias disponibles 24/7');
+  const [titleLine1, setTitleLine1] = useState('Cuidamos a tu mascota');
+  const [titleHighlight, setTitleHighlight] = useState('como parte de la familia');
+  const [subtitle, setSubtitle] = useState('Clínica veterinaria con equipo médico certificado, tecnología de punta y trato humano. Agenda tu cita online en solo 3 pasos.');
+  const [ctaPrimary, setCtaPrimary] = useState('Agendar Cita');
+  const [ctaSecondary, setCtaSecondary] = useState('Emergencia 24/7');
+  const [heroImage, setHeroImage] = useState('https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=800&h=800&fit=crop');
   const [imgUploading, setImgUploading] = useState(false);
-  const [imgPreview, setImgPreview] = useState(null);
-  const [certIcon, setCertIcon] = useState('');
-  const [certTitle, setCertTitle] = useState('');
-  const [certSubtitle, setCertSubtitle] = useState('');
+  const [imgPreview, setImgPreview] = useState('https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=800&h=800&fit=crop');
+  const [certIcon, setCertIcon] = useState('🏆');
+  const [certTitle, setCertTitle] = useState('Fear Free Certified');
+  const [certSubtitle, setCertSubtitle] = useState('Atención sin estrés');
 
   // Métricas (3 fijas)
-  const [metric1Value, setMetric1Value] = useState('');
-  const [metric1Label, setMetric1Label] = useState('');
-  const [metric2Value, setMetric2Value] = useState('');
-  const [metric2Label, setMetric2Label] = useState('');
-  const [metric3Value, setMetric3Value] = useState('');
-  const [metric3Label, setMetric3Label] = useState('');
+  const [metric1Value, setMetric1Value] = useState('5,000+');
+  const [metric1Label, setMetric1Label] = useState('mascotas atendidas');
+  const [metric2Value, setMetric2Value] = useState('4.9★');
+  const [metric2Label, setMetric2Label] = useState('487 reseñas');
+  const [metric3Value, setMetric3Value] = useState('12+');
+  const [metric3Label, setMetric3Label] = useState('años de experiencia');
 
   const uploadImage = async (file) => {
     setImgUploading(true);
