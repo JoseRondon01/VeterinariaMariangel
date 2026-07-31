@@ -29,8 +29,19 @@ export default function ProductCard({ product }) {
             loading="lazy"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <span className="text-6xl opacity-30">🐾</span>
+          <div className="w-full h-full flex flex-col items-center justify-center gap-2">
+            <span className="text-5xl opacity-60">
+              {product.categoryId === 1 || product.categoryId === 5 ? '🍖' :
+               product.categoryId === 2 ? '💊' :
+               product.categoryId === 3 ? '🎾' :
+               product.categoryId === 4 ? '🛁' : '🐾'}
+            </span>
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+              {product.categoryId === 1 || product.categoryId === 5 ? 'Alimento' :
+               product.categoryId === 2 ? 'Medicamento' :
+               product.categoryId === 3 ? 'Juguete' :
+               product.categoryId === 4 ? 'Higiene' : 'Producto'}
+            </span>
           </div>
         )}
         {/* Badge de moneda */}
