@@ -70,7 +70,7 @@ const team = [
     experience: '10 años',
     certifications: ['Cirugía Avanzada', 'AO Trauma Member'],
     bio: 'Especialista en procedimientos quirúrgicos de alta complejidad con enfoque mínimamente invasivo.',
-    image: 'https://ui-avatars.com/api/?name=Mateo+Herrera&background=0D8ABC&color=fff&size=256',
+    image: '/team/mateo-herrera.jpg',
   },
   {
     id: 3,
@@ -80,7 +80,7 @@ const team = [
     experience: '8 años',
     certifications: ['Exotic Animal Practice', 'Fear Free Certified'],
     bio: 'Referente regional en medicina de animales no convencionales y conservación.',
-    image: 'https://ui-avatars.com/api/?name=Camila+Torres&background=E91E63&color=fff&size=256',
+    image: '/team/camila-torres.jpg',
   },
   {
     id: 4,
@@ -90,7 +90,7 @@ const team = [
     experience: '9 años',
     certifications: ['Dermatology Specialist', 'ISVD Member'],
     bio: 'Experto en diagnóstico y tratamiento de enfermedades de la piel y alergias crónicas.',
-    image: 'https://ui-avatars.com/api/?name=Sebastian+Vega&background=4CAF50&color=fff&size=256',
+    image: '/team/sebastian-vega.jpg',
   },
 ];
 
