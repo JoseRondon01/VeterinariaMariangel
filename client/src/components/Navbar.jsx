@@ -61,6 +61,16 @@ export default function Navbar() {
 
   const handleNavClick = () => setMobileOpen(false);
 
+  const scrollToServices = () => {
+    setMobileOpen(false);
+    const el = document.getElementById('servicios');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      window.location.href = '/#servicios';
+    }
+  };
+
   return (
     <>
       {/* Skip link para accesibilidad WCAG */}
@@ -171,8 +181,8 @@ export default function Navbar() {
               </button>
 
               {/* Botón de Servicios */}
-              <Link
-                to="/#servicios"
+              <button
+                onClick={scrollToServices}
                 className="btn-secondary text-sm px-4 py-2.5"
                 aria-label="Ver servicios veterinarios"
               >
@@ -185,7 +195,7 @@ export default function Navbar() {
                   </span>
                   <span className="font-bold">Servicios</span>
                 </span>
-              </Link>
+              </button>
 
               <button
                 onClick={openBooking}
@@ -304,9 +314,8 @@ export default function Navbar() {
                 </button>
 
                 {/* Botón Servicios móvil */}
-                <Link
-                  to="/#servicios"
-                  onClick={handleNavClick}
+                <button
+                  onClick={scrollToServices}
                   className="btn-secondary w-full"
                   aria-label="Ver servicios veterinarios"
                 >
@@ -319,7 +328,7 @@ export default function Navbar() {
                     </span>
                     <span className="font-bold">Servicios</span>
                   </span>
-                </Link>
+                </button>
               </div>
             </div>
           </div>
