@@ -420,32 +420,54 @@ function BusinessInfoManager() {
 
   useEffect(() => {
     fetch('/api/admin/business-info', { headers: API_HEADERS() })
-      .then((r) => r.json())
+      .then(async (r) => {
+        if (!r.ok) throw new Error('API error');
+        const text = await r.text();
+        try { return JSON.parse(text); }
+        catch { throw new Error('Invalid JSON'); }
+      })
       .then((data) => {
         setInfo(data);
-        setBusinessName(data.businessName || '');
+        setBusinessName(data.businessName || 'Veterinaria Mariangel');
         setTagline(data.tagline || '');
-        setPhone(data.phone || '');
-        setWhatsappNumber(data.whatsappNumber || '');
-        setEmail(data.email || '');
+        setPhone(data.phone || '+584141234567');
+        setWhatsappNumber(data.whatsappNumber || '584141234567');
+        setEmail(data.email || 'contacto@veterinariamariangel.com');
         setAddress(data.address || '');
         setMapEmbedUrl(data.mapEmbedUrl || '');
         const s = data.schedule || {};
-        setSchedWeekdaysLabel(s.weekdays?.label || '');
-        setSchedWeekdaysHours(s.weekdays?.hours || '');
-        setSchedSaturdayLabel(s.saturday?.label || '');
-        setSchedSaturdayHours(s.saturday?.hours || '');
-        setSchedSundayLabel(s.sunday?.label || '');
-        setSchedSundayHours(s.sunday?.hours || '');
-        setSchedEmergencyLabel(s.emergency?.label || '');
-        setSchedEmergencyHours(s.emergency?.hours || '');
+        setSchedWeekdaysLabel(s.weekdays?.label || 'Lunes a Viernes');
+        setSchedWeekdaysHours(s.weekdays?.hours || '8:00 AM - 8:00 PM');
+        setSchedSaturdayLabel(s.saturday?.label || 'Sábado');
+        setSchedSaturdayHours(s.saturday?.hours || '9:00 AM - 2:00 PM');
+        setSchedSundayLabel(s.sunday?.label || 'Domingo');
+        setSchedSundayHours(s.sunday?.hours || 'Cerrado (solo urgencias)');
+        setSchedEmergencyLabel(s.emergency?.label || 'Urgencias');
+        setSchedEmergencyHours(s.emergency?.hours || '24/7 · 365 días');
         const soc = data.social || {};
         setFacebook(soc.facebook || '');
         setInstagram(soc.instagram || '');
         setTwitter(soc.twitter || '');
         setTiktok(soc.tiktok || '');
       })
-      .catch(console.error)
+      .catch(() => {
+        // Fallback con datos por defecto mientras la API no esté lista
+        setBusinessName('Veterinaria Mariangel');
+        setTagline('Clínica veterinaria comprometida con el bienestar de tu mascota.');
+        setPhone('+584141234567');
+        setWhatsappNumber('584141234567');
+        setEmail('contacto@veterinariamariangel.com');
+        setAddress('Av. Principal de Las Mercedes, Caracas');
+        setMapEmbedUrl('');
+        setSchedWeekdaysLabel('Lunes a Viernes');
+        setSchedWeekdaysHours('8:00 AM - 8:00 PM');
+        setSchedSaturdayLabel('Sábado');
+        setSchedSaturdayHours('9:00 AM - 2:00 PM');
+        setSchedSundayLabel('Domingo');
+        setSchedSundayHours('Cerrado (solo urgencias)');
+        setSchedEmergencyLabel('Urgencias');
+        setSchedEmergencyHours('24/7 · 365 días');
+      })
       .finally(() => setLoading(false));
   }, []);
 
