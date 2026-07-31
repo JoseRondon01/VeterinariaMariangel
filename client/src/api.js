@@ -1,7 +1,5 @@
-// Base URL for API calls — auto-detected for Vercel/Render/localhost
-const API_URL = typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')
-  ? 'https://veterinariamariangel.onrender.com'
-  : '';
+// Helper para llamadas API: en producción (Vercel) usa URL absoluta de Render
+const API_URL = import.meta.env.PROD ? 'https://veterinariamariangel.onrender.com' : '';
 
 export function apiUrl(path) {
   return API_URL + path;

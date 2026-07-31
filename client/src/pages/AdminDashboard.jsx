@@ -1,4 +1,3 @@
-import { apiUrl } from "../api.js";
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -22,7 +21,7 @@ function RateManager() {
   const [msg, setMsg] = useState('');
 
   useEffect(() => {
-    fetch(apiUrl("/api/admin/exchange-rates', { headers: API_HEADERS() })
+    fetch('/api/admin/exchange-rates', { headers: API_HEADERS() })
       .then((r) => r.json())
       .then((data) => {
         setRates(data);
@@ -39,7 +38,7 @@ function RateManager() {
     setSaving(true);
     setMsg('');
     try {
-      const res = await fetch(apiUrl("/api/admin/exchange-rates', {
+      const res = await fetch('/api/admin/exchange-rates', {
         method: 'PUT',
         headers: API_HEADERS(),
         body: JSON.stringify({
@@ -420,7 +419,7 @@ function BusinessInfoManager() {
   const [tiktok, setTiktok] = useState('');
 
   useEffect(() => {
-    fetch(apiUrl("/api/admin/business-info', { headers: API_HEADERS() })
+    fetch('/api/admin/business-info', { headers: API_HEADERS() })
       .then(async (r) => {
         if (!r.ok) throw new Error('API error');
         const text = await r.text();
@@ -480,7 +479,7 @@ function BusinessInfoManager() {
     setSaving(true);
     setMsg('');
     try {
-      const res = await fetch(apiUrl("/api/admin/business-info', {
+      const res = await fetch('/api/admin/business-info', {
         method: 'PUT',
         headers: API_HEADERS(),
         body: JSON.stringify({
@@ -727,8 +726,8 @@ function ProductManager() {
   const fetchProducts = () => {
     setLoading(true);
     Promise.all([
-      fetch(apiUrl("/api/admin/products', { headers: API_HEADERS() }).then((r) => r.json()),
-      fetch(apiUrl("/api/categories').then((r) => r.json()).catch(() => []),
+      fetch('/api/admin/products', { headers: API_HEADERS() }).then((r) => r.json()),
+      fetch('/api/categories').then((r) => r.json()).catch(() => []),
     ])
       .then(([prods, cats]) => {
         setProducts(Array.isArray(prods) ? prods : []);
@@ -757,7 +756,7 @@ function ProductManager() {
         imageUrl: formImg.trim() || null,
         isActive: formActive,
       };
-      const url = editingId ? `/api/admin/products/${editingId}` : apiUrl("/api/admin/products';
+      const url = editingId ? `/api/admin/products/${editingId}` : '/api/admin/products';
       const method = editingId ? 'PUT' : 'POST';
       const res = await fetch(url, { method, headers: API_HEADERS(), body: JSON.stringify(body) });
       const data = await res.json();
@@ -1012,7 +1011,7 @@ export default function AdminDashboard() {
       return;
     }
     // Verificar token
-    fetch(apiUrl("/api/admin/verify', { headers: API_HEADERS() })
+    fetch('/api/admin/verify', { headers: API_HEADERS() })
       .then((r) => r.json())
       .then((data) => {
         if (!data.valid) {
