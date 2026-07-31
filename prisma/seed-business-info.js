@@ -30,9 +30,11 @@ async function main() {
     },
   });
 
-  console.log('✅ Tabla business_info sembrada con datos iniciales');
+  console.log('✅ Tabla business_info re-sembrada con datos actualizados');
   const info = await prisma.businessInfo.findFirst();
-  console.log(JSON.stringify(info, null, 2));
+  console.log('   businessName:', info.businessName);
+  console.log('   phone:', info.phone);
+  console.log('   social:', JSON.stringify(info.social));
 }
 
 main()
