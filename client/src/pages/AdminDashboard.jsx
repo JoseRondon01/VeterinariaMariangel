@@ -926,6 +926,270 @@ function ProductManager() {
 }
 
 // ===========================================================================
+// Componente: TeamManager
+// ===========================================================================
+function TeamManager() {
+  const [team, setTeam] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [msg, setMsg] = useState('');
+
+  // Form state
+  const [formName, setFormName] = useState('');
+  const [formRole, setFormRole] = useState('');
+  const [formSpecialty, setFormSpecialty] = useState('');
+  const [formExperience, setFormExperience] = useState('');
+  const [formBio, setFormBio] = useState('');
+  const [formImg, setFormImg] = useState('');
+  const [formImgUploading, setFormImgUploading] = useState(false);
+  const [formImgPreview, setFormImgPreview] = useState(null);
+
+  const fetchTeam = () => {
+    setLoading(true);
+    fetch('/api/admin/team', { headers: API_HEADERS() })
+      .then((r) => r.json())
+      .then((data) => setTeam(Array.isArray(data) ? data : []))
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => { fetchTeam(); }, []);
+
+  const openEdit = (v) => {
+    setEditingId(v.id);
+    setFormName(v.fullName || '');
+    setFormRole(v.role || '');
+    setFormSpecialty(v.specialty || '');
+    setFormExperience(v.experience || '');
+    setFormBio(v.bio || '');
+    setFormImg(v.image || '');
+    setFormImgPreview(v.image || null);
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setFormName(''); setFormRole(''); setFormSpecialty('');
+    setFormExperience(''); setFormBio(''); setFormImg('');
+    setFormImgPreview(null);
+  };
+
+  const uploadImage = async (file) => {
+    setFormImgUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('image', file);
+      const token = localStorage.getItem('admin_token');
+      const res = await fetch('/api/admin/upload', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: fd,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setFormImg(data.url);
+      setFormImgPreview(data.url);
+    } catch (err) {
+      alert('Error al subir imagen: ' + err.message);
+    } finally {
+      setFormImgUploading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!formName.trim()) {
+      setMsg('❌ El nombre es obligatorio');
+      setTimeout(() => setMsg(''), 3000);
+      return;
+    }
+    setSaving(true);
+    setMsg('');
+    try {
+      const body = {
+        fullName: formName.trim(),
+        role: formRole.trim(),
+        specialty: formSpecialty.trim(),
+        experience: formExperience.trim(),
+        bio: formBio.trim(),
+        image: formImg.trim() || null,
+      };
+      const res = await fetch(`/api/admin/team/${editingId}`, {
+        method: 'PUT',
+        headers: API_HEADERS(),
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setMsg('✅ Miembro del equipo actualizado');
+      cancelEdit();
+      fetchTeam();
+    } catch (err) {
+      setMsg('❌ Error: ' + err.message);
+    } finally {
+      setSaving(false);
+      setTimeout(() => setMsg(''), 4000);
+    }
+  };
+
+  if (loading) return <div className="animate-pulse bg-slate-100 h-64 rounded-xl" />;
+
+  return (
+    <div className="bg-white rounded-2xl shadow-md p-6">
+      <h2 className="text-lg font-extrabold text-slate-800 mb-4 flex items-center gap-2">
+        <span>👥</span> Gestión del Equipo
+      </h2>
+      <p className="text-xs text-slate-400 mb-4">
+        Cambia las fotos y datos de los profesionales que aparecen en la sección "Equipo" del sitio web.
+      </p>
+
+      {msg && (
+        <div className={`mb-4 p-3 rounded-xl text-sm font-medium ${msg.startsWith('✅') ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+          {msg}
+        </div>
+      )}
+
+      {/* Formulario de edición */}
+      {editingId && (
+        <div className="mb-6 border border-slate-200 rounded-xl p-4 bg-slate-50">
+          <h3 className="font-bold text-slate-700 text-sm mb-3">
+            Editar: {team.find((v) => v.id === editingId)?.fullName || ''}
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Nombre completo *</label>
+              <input
+                type="text" value={formName}
+                onChange={(e) => setFormName(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Rol / Cargo</label>
+              <input
+                type="text" value={formRole}
+                onChange={(e) => setFormRole(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Especialidad</label>
+              <input
+                type="text" value={formSpecialty}
+                onChange={(e) => setFormSpecialty(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Experiencia</label>
+              <input
+                type="text" value={formExperience}
+                onChange={(e) => setFormExperience(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none"
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-medium text-slate-500 mb-1">Bio</label>
+              <textarea
+                value={formBio} onChange={(e) => setFormBio(e.target.value)} rows="2"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none"
+              />
+            </div>
+            {/* Selector de imagen con Cloudinary */}
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-medium text-slate-500 mb-1">Foto del Profesional</label>
+              {formImgPreview && (
+                <div className="relative mb-2">
+                  <img
+                    src={formImgPreview} alt="Preview"
+                    className="w-32 h-32 rounded-2xl object-cover border-4 border-medical-100"
+                  />
+                  <button
+                    onClick={() => { setFormImg(''); setFormImgPreview(null); }}
+                    className="absolute top-1 left-[120px] bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold hover:bg-red-600"
+                  >
+                    {'\u00D7'}
+                  </button>
+                </div>
+              )}
+              <div className="flex gap-2">
+                <label className="flex-1 px-4 py-2.5 bg-slate-100 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-200 transition cursor-pointer text-center">
+                  {formImgUploading ? '\u23F3 Subiendo...' : '\uD83D\uDCF7 Subir Imagen'}
+                  <input
+                    type="file" accept="image/*"
+                    onChange={async (e) => {
+                      const fl = e.target.files?.[0];
+                      if (!fl) return;
+                      setFormImgPreview(URL.createObjectURL(fl));
+                      await uploadImage(fl);
+                    }}
+                    className="hidden" disabled={formImgUploading}
+                  />
+                </label>
+                <label className="px-4 py-2.5 bg-slate-100 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-200 transition cursor-pointer text-center">
+                  {'\uD83D\uDCF8'} C\u00E1mara
+                  <input
+                    type="file" accept="image/*" capture="environment"
+                    onChange={async (e) => {
+                      const fl = e.target.files?.[0];
+                      if (!fl) return;
+                      setFormImgPreview(URL.createObjectURL(fl));
+                      await uploadImage(fl);
+                    }}
+                    className="hidden" disabled={formImgUploading}
+                  />
+                </label>
+              </div>
+              <input
+                type="text" value={formImg}
+                onChange={(e) => { setFormImg(e.target.value); setFormImgPreview(e.target.value || null); }}
+                placeholder="O pega URL externa..."
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm mt-2 focus:ring-2 focus:ring-medical-500 outline-none"
+              />
+            </div>
+          </div>
+          <div className="flex gap-2 mt-4">
+            <button
+              onClick={handleSave} disabled={saving}
+              className="px-5 py-2 bg-medical-600 text-white rounded-xl font-bold text-sm hover:bg-medical-700 transition disabled:opacity-50"
+            >
+              {saving ? 'Guardando...' : 'Guardar Cambios'}
+            </button>
+            <button
+              onClick={cancelEdit}
+              className="px-5 py-2 border border-slate-200 rounded-xl text-sm text-slate-600 hover:bg-slate-100 transition"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Grid de miembros */}
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {team.map((member) => (
+          <div key={member.id} className="border border-slate-200 rounded-xl p-4 text-center hover:shadow-md transition">
+            <img
+              src={member.image || '/dra-mariangel.png'}
+              alt={member.fullName}
+              className="w-24 h-24 rounded-full object-cover border-4 border-medical-100 mx-auto mb-3"
+            />
+            <h3 className="font-bold text-slate-800 text-sm">{member.fullName}</h3>
+            <p className="text-xs text-medical-600 font-medium mt-1">{member.role}</p>
+            <p className="text-xs text-slate-400 mt-1">{member.experience} de experiencia</p>
+            <button
+              onClick={() => openEdit(member)}
+              className="mt-3 px-4 py-1.5 bg-slate-100 text-slate-700 text-xs rounded-lg font-medium hover:bg-slate-200 transition"
+            >
+              Editar
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ===========================================================================
 // Componente: DailySummary
 // ===========================================================================
 function DailySummary() {
@@ -1070,6 +1334,7 @@ export default function AdminDashboard() {
 
   const tabs = [
     { id: 'business', label: 'Info Negocio', icon: '🏢' },
+    { id: 'team', label: 'Equipo', icon: '👥' },
     { id: 'products', label: 'Productos', icon: '📦' },
     { id: 'orders', label: 'Verificar Pagos', icon: '📋' },
     { id: 'summary', label: 'Resumen Diario', icon: '📊' },
@@ -1128,6 +1393,7 @@ export default function AdminDashboard() {
 
         {/* Contenido del tab */}
         {activeTab === 'business' && <BusinessInfoManager />}
+        {activeTab === 'team' && <TeamManager />}
         {activeTab === 'products' && <ProductManager />}
         {activeTab === 'orders' && <OrderVerificationTable />}
         {activeTab === 'summary' && <DailySummary />}

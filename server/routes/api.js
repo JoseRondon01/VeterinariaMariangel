@@ -259,7 +259,30 @@ const appointments = [];
 // ===========================================================================
 
 router.get('/services', (_req, res) => res.json(services));
-router.get('/team', (_req, res) => res.json(team));
+router.get('/team', async (_req, res) => {
+  try {
+    const veterinarians = await prisma.veterinarian.findMany({ where: { active: true } });
+    if (veterinarians.length > 0) {
+      // Convertir de BD a formato esperado por el frontend
+      const mapped = veterinarians.map((v) => ({
+        id: v.id,
+        name: v.fullName,
+        role: v.role,
+        specialty: v.specialty,
+        experience: v.experience,
+        certifications: v.certifications || [],
+        bio: v.bio,
+        image: v.image,
+      }));
+      return res.json(mapped);
+    }
+    // Fallback al array en memoria si no hay datos en BD
+    res.json(team);
+  } catch (err) {
+    console.error('Error fetching team from DB, fallback to memory:', err.message);
+    res.json(team);
+  }
+});
 router.get('/testimonials', (_req, res) => res.json(testimonials));
 router.get('/blog', (_req, res) => res.json(blog));
 
@@ -907,6 +930,47 @@ router.delete('/admin/products/:id', authMiddleware, async (req, res) => {
   } catch (err) {
     console.error('Error deleting product:', err);
     res.status(500).json({ error: 'Error al eliminar producto' });
+  }
+});
+
+// ===========================================================================
+// RUTAS ADMIN — Gestión del Equipo (Veterinarios)
+// ===========================================================================
+
+router.get('/admin/team', authMiddleware, async (_req, res) => {
+  try {
+    const veterinarians = await prisma.veterinarian.findMany({ orderBy: { id: 'asc' } });
+    res.json(veterinarians);
+  } catch (err) {
+    console.error('Error fetching admin team:', err);
+    res.status(500).json({ error: 'Error al cargar el equipo' });
+  }
+});
+
+router.put('/admin/team/:id', authMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { fullName, role, specialty, experience, bio, certifications, image, active } = req.body;
+
+    const updated = await prisma.veterinarian.update({
+      where: { id: Number(id) },
+      data: {
+        ...(fullName !== undefined && { fullName }),
+        ...(role !== undefined && { role }),
+        ...(specialty !== undefined && { specialty }),
+        ...(experience !== undefined && { experience }),
+        ...(bio !== undefined && { bio }),
+        ...(certifications !== undefined && { certifications }),
+        ...(image !== undefined && { image }),
+        ...(active !== undefined && { active }),
+      },
+    });
+
+    console.log(`✅ Veterinario #${id} actualizado: ${updated.fullName}`);
+    res.json({ success: true, veterinarian: updated });
+  } catch (err) {
+    console.error('Error updating veterinarian:', err);
+    res.status(500).json({ error: 'Error al actualizar veterinario' });
   }
 });
 

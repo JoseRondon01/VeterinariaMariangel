@@ -52,6 +52,47 @@ async function main() {
   }
   console.log(`  ✅ ${paymentConfigs.length} configuraciones de pago`);
 
+  // Veterinarios (Equipo)
+  const veterinarians = [
+    {
+      firstName: 'Mariangel', lastName: 'Garcia', fullName: 'Dra. Mariangel Garcia',
+      role: 'Directora Médica · Medicina General', specialty: 'Medicina Preventiva y Medicina Interna',
+      experience: '15 años', bio: 'Fundadora y directora de Veterinaria Mariangel. Con más de 15 años de experiencia, ha dedicado su vida al cuidado integral de las mascotas, combinando la medicina preventiva con un trato cariñoso y personalizado.',
+      image: '/dra-mariangel.png',
+      certifications: ['Fear Free Certified', 'AAHA Member', 'Especialista en Medicina Felina'],
+      active: true,
+    },
+    {
+      firstName: 'Mateo', lastName: 'Herrera', fullName: 'Dr. Mateo Herrera',
+      role: 'Cirujano · Ortopedia', specialty: 'Cirugía de tejidos blandos y ortopedia',
+      experience: '10 años', bio: 'Especialista en procedimientos quirúrgicos de alta complejidad con enfoque mínimamente invasivo.',
+      image: 'https://randomuser.me/api/portraits/men/32.jpg',
+      certifications: ['Cirugía Avanzada', 'AO Trauma Member'],
+      active: true,
+    },
+    {
+      firstName: 'Camila', lastName: 'Torres', fullName: 'Dra. Camila Torres',
+      role: 'Médica de Animales Exóticos', specialty: 'Medicina de aves, reptiles y pequeños mamíferos',
+      experience: '8 años', bio: 'Referente regional en medicina de animales no convencionales y conservación.',
+      image: 'https://randomuser.me/api/portraits/women/44.jpg',
+      certifications: ['Exotic Animal Practice', 'Fear Free Certified'],
+      active: true,
+    },
+    {
+      firstName: 'Sebastián', lastName: 'Vega', fullName: 'Dr. Sebastián Vega',
+      role: 'Dermatología y Alergias', specialty: 'Dermatología veterinaria e inmunología',
+      experience: '9 años', bio: 'Experto en diagnóstico y tratamiento de enfermedades de la piel y alergias crónicas.',
+      image: 'https://randomuser.me/api/portraits/men/75.jpg',
+      certifications: ['Dermatology Specialist', 'ISVD Member'],
+      active: true,
+    },
+  ];
+
+  for (const v of veterinarians) {
+    await prisma.veterinarian.create({ data: v });
+  }
+  console.log(`  ✅ ${veterinarians.length} veterinarios`);
+
   console.log('\n🎉 Seed completado exitosamente!');
 }
 
