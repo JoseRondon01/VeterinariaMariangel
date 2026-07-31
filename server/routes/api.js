@@ -714,6 +714,111 @@ router.put('/admin/payment-config/:id', authMiddleware, async (req, res) => {
 });
 
 // ===========================================================================
+// RUTA PÚBLICA — Información del negocio
+// ===========================================================================
+
+router.get('/business-info', async (_req, res) => {
+  try {
+    let info = await prisma.businessInfo.findFirst();
+    if (!info) {
+      // Crear registro por defecto si no existe
+      info = await prisma.businessInfo.create({
+        data: {
+          businessName: 'Veterinaria Mariangel',
+          phone: '+584141234567',
+          whatsappNumber: '584141234567',
+          email: 'contacto@veterinariamariangel.com',
+          address: 'Av. Principal de Las Mercedes, Caracas',
+          schedule: {
+            weekdays: { label: 'Lunes a Viernes', hours: '8:00 AM - 8:00 PM' },
+            saturday: { label: 'Sábado', hours: '9:00 AM - 2:00 PM' },
+            sunday: { label: 'Domingo', hours: 'Cerrado (solo urgencias)' },
+            emergency: { label: 'Urgencias', hours: '24/7 · 365 días', highlight: true },
+          },
+          social: {
+            facebook: '',
+            instagram: '',
+            twitter: '',
+            tiktok: '',
+          },
+        },
+      });
+    }
+    res.json(info);
+  } catch (err) {
+    console.error('Error fetching business info:', err);
+    res.status(500).json({ error: 'Error al cargar información del negocio' });
+  }
+});
+
+// ===========================================================================
+// RUTAS ADMIN — Información del negocio
+// ===========================================================================
+
+router.get('/admin/business-info', authMiddleware, async (_req, res) => {
+  try {
+    let info = await prisma.businessInfo.findFirst();
+    if (!info) {
+      info = await prisma.businessInfo.create({
+        data: {
+          businessName: 'Veterinaria Mariangel',
+          phone: '+584141234567',
+          whatsappNumber: '584141234567',
+          email: 'contacto@veterinariamariangel.com',
+          schedule: {},
+          social: {},
+        },
+      });
+    }
+    res.json(info);
+  } catch (err) {
+    console.error('Error fetching admin business info:', err);
+    res.status(500).json({ error: 'Error al cargar información del negocio' });
+  }
+});
+
+router.put('/admin/business-info', authMiddleware, async (req, res) => {
+  try {
+    const { businessName, tagline, phone, whatsappNumber, email, address, mapEmbedUrl, schedule, social } = req.body;
+
+    let info = await prisma.businessInfo.findFirst();
+    if (!info) {
+      info = await prisma.businessInfo.create({
+        data: {
+          businessName: 'Veterinaria Mariangel',
+          phone: '+584141234567',
+          whatsappNumber: '584141234567',
+          email: 'contacto@veterinariamariangel.com',
+          schedule: {},
+          social: {},
+        },
+      });
+    }
+
+    const updated = await prisma.businessInfo.update({
+      where: { id: info.id },
+      data: {
+        ...(businessName !== undefined && { businessName }),
+        ...(tagline !== undefined && { tagline }),
+        ...(phone !== undefined && { phone }),
+        ...(whatsappNumber !== undefined && { whatsappNumber }),
+        ...(email !== undefined && { email }),
+        ...(address !== undefined && { address }),
+        ...(mapEmbedUrl !== undefined && { mapEmbedUrl }),
+        ...(schedule !== undefined && { schedule }),
+        ...(social !== undefined && { social }),
+      },
+    });
+
+    console.log('✅ Información del negocio actualizada');
+    res.json({ success: true, info: updated });
+  } catch (err) {
+    console.error('Error updating business info:', err);
+    res.status(500).json({ error: 'Error al actualizar información del negocio' });
+  }
+});
+
+// ===========================================================================
 // RUTAS ADMIN — Productos (CRUD básico)
 // ===========================================================================
 

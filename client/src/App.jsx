@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
 import { BookingProvider } from './components/BookingContext.jsx';
 import { StoreProvider } from './components/StoreContext.jsx';
+import { BusinessInfoProvider } from './components/BusinessInfoContext.jsx';
 import Navbar from './components/Navbar.jsx';
 import Footer from './components/Footer.jsx';
 import BookingModal from './components/BookingModal.jsx';
@@ -18,9 +19,10 @@ import NotFound from './pages/NotFound.jsx';
 export default function App() {
   return (
     <StoreProvider>
-      <BookingProvider>
-        <ScrollToTop />
-        <Routes>
+      <BusinessInfoProvider>
+        <BookingProvider>
+          <ScrollToTop />
+          <Routes>
           {/* Rutas Admin — standalone, sin layout público */}
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={<AdminDashboard />} />
@@ -47,8 +49,9 @@ export default function App() {
               </div>
             }
           />
-        </Routes>
-      </BookingProvider>
+          </Routes>
+        </BookingProvider>
+      </BusinessInfoProvider>
     </StoreProvider>
   );
 }

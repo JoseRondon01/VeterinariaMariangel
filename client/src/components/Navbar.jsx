@@ -2,10 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { useBooking } from './BookingContext.jsx';
 import { useStore } from './StoreContext.jsx';
+import { useBusinessInfo } from './BusinessInfoContext.jsx';
 import CheckoutModal from './CheckoutModal.jsx';
-
-const EMERGENCY_PHONE = '+541127258138';
-const EMERGENCY_TEL = 'https://api.whatsapp.com/send/?phone=541127258138&text&type=phone_number&app_absent=0';
 
 const CURRENCIES = [
   { code: 'USD', label: 'USD', symbol: '$', flag: '🇺🇸' },
@@ -28,6 +26,10 @@ export default function Navbar() {
   const currencyRef = useRef(null);
   const { openBooking } = useBooking();
   const { selectedCurrency, setCurrency, cartCount, cartTotalConverted, formatPrice } = useStore();
+  const { getWhatsAppUrl, getPhoneDisplay, info } = useBusinessInfo();
+
+  const EMERGENCY_PHONE = getPhoneDisplay();
+  const EMERGENCY_TEL = getWhatsAppUrl();
 
   // Cerrar dropdown de moneda al hacer click fuera
   useEffect(() => {
@@ -92,7 +94,7 @@ export default function Navbar() {
                 🐾
               </span>
               <span className="font-display font-extrabold text-lg md:text-2xl neon-text">
-                Veterinaria <span className="neon-text-aqua">Mariangel</span>
+                {info.businessName || 'Veterinaria Mariangel'}
               </span>
             </Link>
 

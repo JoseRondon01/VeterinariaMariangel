@@ -1,7 +1,9 @@
-const WHATSAPP_NUMBER = '541127258138'; // ARG: +54 11 2725-8138
-const WHATSAPP_URL = `https://api.whatsapp.com/send/?phone=${WHATSAPP_NUMBER}&text&type=phone_number&app_absent=0`;
+import { useBusinessInfo } from './BusinessInfoContext.jsx';
 
 export default function WhatsAppButton() {
+  const { getWhatsAppUrl } = useBusinessInfo();
+  const WHATSAPP_URL = getWhatsAppUrl();
+
   return (
     <a
       href={WHATSAPP_URL}

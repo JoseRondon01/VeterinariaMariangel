@@ -387,6 +387,277 @@ function OrderVerificationTable() {
 }
 
 // ===========================================================================
+// Componente: BusinessInfoManager
+// ===========================================================================
+function BusinessInfoManager() {
+  const [info, setInfo] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState('');
+
+  // Form state
+  const [businessName, setBusinessName] = useState('');
+  const [tagline, setTagline] = useState('');
+  const [phone, setPhone] = useState('');
+  const [whatsappNumber, setWhatsappNumber] = useState('');
+  const [email, setEmail] = useState('');
+  const [address, setAddress] = useState('');
+  const [mapEmbedUrl, setMapEmbedUrl] = useState('');
+  // Schedule
+  const [schedWeekdaysLabel, setSchedWeekdaysLabel] = useState('');
+  const [schedWeekdaysHours, setSchedWeekdaysHours] = useState('');
+  const [schedSaturdayLabel, setSchedSaturdayLabel] = useState('');
+  const [schedSaturdayHours, setSchedSaturdayHours] = useState('');
+  const [schedSundayLabel, setSchedSundayLabel] = useState('');
+  const [schedSundayHours, setSchedSundayHours] = useState('');
+  const [schedEmergencyLabel, setSchedEmergencyLabel] = useState('');
+  const [schedEmergencyHours, setSchedEmergencyHours] = useState('');
+  // Social
+  const [facebook, setFacebook] = useState('');
+  const [instagram, setInstagram] = useState('');
+  const [twitter, setTwitter] = useState('');
+  const [tiktok, setTiktok] = useState('');
+
+  useEffect(() => {
+    fetch('/api/admin/business-info', { headers: API_HEADERS() })
+      .then((r) => r.json())
+      .then((data) => {
+        setInfo(data);
+        setBusinessName(data.businessName || '');
+        setTagline(data.tagline || '');
+        setPhone(data.phone || '');
+        setWhatsappNumber(data.whatsappNumber || '');
+        setEmail(data.email || '');
+        setAddress(data.address || '');
+        setMapEmbedUrl(data.mapEmbedUrl || '');
+        const s = data.schedule || {};
+        setSchedWeekdaysLabel(s.weekdays?.label || '');
+        setSchedWeekdaysHours(s.weekdays?.hours || '');
+        setSchedSaturdayLabel(s.saturday?.label || '');
+        setSchedSaturdayHours(s.saturday?.hours || '');
+        setSchedSundayLabel(s.sunday?.label || '');
+        setSchedSundayHours(s.sunday?.hours || '');
+        setSchedEmergencyLabel(s.emergency?.label || '');
+        setSchedEmergencyHours(s.emergency?.hours || '');
+        const soc = data.social || {};
+        setFacebook(soc.facebook || '');
+        setInstagram(soc.instagram || '');
+        setTwitter(soc.twitter || '');
+        setTiktok(soc.tiktok || '');
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleSave = async () => {
+    setSaving(true);
+    setMsg('');
+    try {
+      const res = await fetch('/api/admin/business-info', {
+        method: 'PUT',
+        headers: API_HEADERS(),
+        body: JSON.stringify({
+          businessName,
+          tagline,
+          phone,
+          whatsappNumber,
+          email,
+          address,
+          mapEmbedUrl,
+          schedule: {
+            weekdays: { label: schedWeekdaysLabel, hours: schedWeekdaysHours },
+            saturday: { label: schedSaturdayLabel, hours: schedSaturdayHours },
+            sunday: { label: schedSundayLabel, hours: schedSundayHours },
+            emergency: { label: schedEmergencyLabel, hours: schedEmergencyHours, highlight: true },
+          },
+          social: {
+            facebook,
+            instagram,
+            twitter,
+            tiktok,
+          },
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setInfo(data.info);
+      setMsg('✅ Información actualizada correctamente');
+    } catch (err) {
+      setMsg('❌ Error: ' + err.message);
+    } finally {
+      setSaving(false);
+      setTimeout(() => setMsg(''), 4000);
+    }
+  };
+
+  if (loading) return <div className="animate-pulse bg-slate-100 h-64 rounded-xl" />;
+
+  return (
+    <div className="bg-white rounded-2xl shadow-md p-6">
+      <h2 className="text-lg font-extrabold text-slate-800 mb-4 flex items-center gap-2">
+        <span>🏢</span> Información del Negocio
+      </h2>
+
+      <div className="space-y-6">
+        {/* Marca */}
+        <div className="border border-slate-200 rounded-xl p-4">
+          <h3 className="font-bold text-slate-700 text-sm mb-3 flex items-center gap-2">
+            <span>🏷️</span> Marca
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Nombre del negocio</label>
+              <input type="text" value={businessName} onChange={(e) => setBusinessName(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Eslogan / Descripción corta</label>
+              <input type="text" value={tagline} onChange={(e) => setTagline(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+            </div>
+          </div>
+        </div>
+
+        {/* Contacto */}
+        <div className="border border-slate-200 rounded-xl p-4">
+          <h3 className="font-bold text-slate-700 text-sm mb-3 flex items-center gap-2">
+            <span>📞</span> Contacto
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Teléfono (mostrado)</label>
+              <input type="text" value={phone} onChange={(e) => setPhone(e.target.value)}
+                placeholder="+584141234567"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Número WhatsApp (solo dígitos)</label>
+              <input type="text" value={whatsappNumber} onChange={(e) => setWhatsappNumber(e.target.value)}
+                placeholder="584141234567"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Correo electrónico</label>
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Dirección física</label>
+              <input type="text" value={address} onChange={(e) => setAddress(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-medium text-slate-500 mb-1">URL del mapa embebido (OpenStreetMap)</label>
+              <input type="text" value={mapEmbedUrl} onChange={(e) => setMapEmbedUrl(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+            </div>
+          </div>
+        </div>
+
+        {/* Horarios */}
+        <div className="border border-slate-200 rounded-xl p-4">
+          <h3 className="font-bold text-slate-700 text-sm mb-3 flex items-center gap-2">
+            <span>🕐</span> Horarios de Atención
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <label className="block text-xs font-medium text-slate-500 mb-1">Lunes a Viernes — Etiqueta</label>
+                <input type="text" value={schedWeekdaysLabel} onChange={(e) => setSchedWeekdaysLabel(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+              </div>
+              <div className="flex-1">
+                <label className="block text-xs font-medium text-slate-500 mb-1">Horario</label>
+                <input type="text" value={schedWeekdaysHours} onChange={(e) => setSchedWeekdaysHours(e.target.value)}
+                  placeholder="8:00 AM - 8:00 PM"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <label className="block text-xs font-medium text-slate-500 mb-1">Sábado — Etiqueta</label>
+                <input type="text" value={schedSaturdayLabel} onChange={(e) => setSchedSaturdayLabel(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+              </div>
+              <div className="flex-1">
+                <label className="block text-xs font-medium text-slate-500 mb-1">Horario</label>
+                <input type="text" value={schedSaturdayHours} onChange={(e) => setSchedSaturdayHours(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <label className="block text-xs font-medium text-slate-500 mb-1">Domingo — Etiqueta</label>
+                <input type="text" value={schedSundayLabel} onChange={(e) => setSchedSundayLabel(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+              </div>
+              <div className="flex-1">
+                <label className="block text-xs font-medium text-slate-500 mb-1">Horario</label>
+                <input type="text" value={schedSundayHours} onChange={(e) => setSchedSundayHours(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <label className="block text-xs font-medium text-slate-500 mb-1">Urgencias — Etiqueta</label>
+                <input type="text" value={schedEmergencyLabel} onChange={(e) => setSchedEmergencyLabel(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+              </div>
+              <div className="flex-1">
+                <label className="block text-xs font-medium text-slate-500 mb-1">Horario</label>
+                <input type="text" value={schedEmergencyHours} onChange={(e) => setSchedEmergencyHours(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Redes Sociales */}
+        <div className="border border-slate-200 rounded-xl p-4">
+          <h3 className="font-bold text-slate-700 text-sm mb-3 flex items-center gap-2">
+            <span>🌐</span> Redes Sociales
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Facebook (URL)</label>
+              <input type="text" value={facebook} onChange={(e) => setFacebook(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Instagram (URL)</label>
+              <input type="text" value={instagram} onChange={(e) => setInstagram(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Twitter / X (URL)</label>
+              <input type="text" value={twitter} onChange={(e) => setTwitter(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">TikTok (URL)</label>
+              <input type="text" value={tiktok} onChange={(e) => setTiktok(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+            </div>
+          </div>
+        </div>
+
+        {/* Guardar */}
+        <div className="flex items-center gap-3 pt-2">
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="px-6 py-2.5 bg-medical-600 text-white rounded-xl font-bold text-sm hover:bg-medical-700 transition disabled:opacity-50"
+          >
+            {saving ? 'Guardando...' : 'Guardar Cambios'}
+          </button>
+          {msg && <span className={`text-sm font-medium ${msg.startsWith('✅') ? 'text-green-600' : 'text-red-600'}`}>{msg}</span>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ===========================================================================
 // Componente: DailySummary
 // ===========================================================================
 function DailySummary() {
@@ -530,6 +801,7 @@ export default function AdminDashboard() {
   };
 
   const tabs = [
+    { id: 'business', label: 'Info Negocio', icon: '🏢' },
     { id: 'orders', label: 'Verificar Pagos', icon: '📋' },
     { id: 'summary', label: 'Resumen Diario', icon: '📊' },
     { id: 'rates', label: 'Tasas de Cambio', icon: '💱' },
@@ -586,6 +858,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Contenido del tab */}
+        {activeTab === 'business' && <BusinessInfoManager />}
         {activeTab === 'orders' && <OrderVerificationTable />}
         {activeTab === 'summary' && <DailySummary />}
         {activeTab === 'rates' && <RateManager />}
