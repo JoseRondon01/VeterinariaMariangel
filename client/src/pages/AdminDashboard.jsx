@@ -55,25 +55,30 @@ function HeroManager() {
 
   useEffect(() => {
     fetch('/api/admin/hero', { headers: API_HEADERS() })
-      .then((r) => r.json())
-      .then((data) => {
-        setBadgeText(data.badgeText || '');
-        setTitleLine1(data.titleLine1 || '');
-        setTitleHighlight(data.titleHighlight || '');
-        setSubtitle(data.subtitle || '');
-        setCtaPrimary(data.ctaPrimary || '');
-        setCtaSecondary(data.ctaSecondary || '');
-        setHeroImage(data.heroImage || '');
-        setImgPreview(data.heroImage || null);
-        setCertIcon(data.certificationIcon || '');
-        setCertTitle(data.certificationTitle || '');
-        setCertSubtitle(data.certificationSubtitle || '');
-        const m = data.metrics || [{}, {}, {}];
-        setMetric1Value(m[0]?.value || ''); setMetric1Label(m[0]?.label || '');
-        setMetric2Value(m[1]?.value || ''); setMetric2Label(m[1]?.label || '');
-        setMetric3Value(m[2]?.value || ''); setMetric3Label(m[2]?.label || '');
+      .then(async (r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
       })
-      .catch(console.error)
+      .then((data) => {
+        // Solo actualiza campos que tengan valor real (preserva defaults)
+        if (data.badgeText) setBadgeText(data.badgeText);
+        if (data.titleLine1) setTitleLine1(data.titleLine1);
+        if (data.titleHighlight) setTitleHighlight(data.titleHighlight);
+        if (data.subtitle) setSubtitle(data.subtitle);
+        if (data.ctaPrimary) setCtaPrimary(data.ctaPrimary);
+        if (data.ctaSecondary) setCtaSecondary(data.ctaSecondary);
+        if (data.heroImage) { setHeroImage(data.heroImage); setImgPreview(data.heroImage); }
+        if (data.certificationIcon) setCertIcon(data.certificationIcon);
+        if (data.certificationTitle) setCertTitle(data.certificationTitle);
+        if (data.certificationSubtitle) setCertSubtitle(data.certificationSubtitle);
+        const m = data.metrics;
+        if (m && Array.isArray(m)) {
+          if (m[0]?.value) { setMetric1Value(m[0].value); setMetric1Label(m[0].label || ''); }
+          if (m[1]?.value) { setMetric2Value(m[1].value); setMetric2Label(m[1].label || ''); }
+          if (m[2]?.value) { setMetric3Value(m[2].value); setMetric3Label(m[2].label || ''); }
+        }
+      })
+      .catch((err) => console.warn('Hero API no disponible, usando valores por defecto:', err.message))
       .finally(() => setLoading(false));
   }, []);
 
