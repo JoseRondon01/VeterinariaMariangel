@@ -949,7 +949,16 @@ function TeamManager() {
     setLoading(true);
     fetch('/api/admin/team', { headers: API_HEADERS() })
       .then((r) => r.json())
-      .then((data) => setTeam(Array.isArray(data) ? data : []))
+      .then((data) => {
+        const arr = Array.isArray(data) ? data : [];
+        // Normalizar: tanto DB (fullName) como memoria (name) → fullName
+        const normalized = arr.map((v) => ({
+          ...v,
+          fullName: v.fullName || v.name || 'Sin nombre',
+          image: v.image || '',
+        }));
+        setTeam(normalized);
+      })
       .catch(console.error)
       .finally(() => setLoading(false));
   };
