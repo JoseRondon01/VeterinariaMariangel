@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useBooking } from './BookingContext.jsx';
+import { useStore } from './StoreContext.jsx';
 
 const iconMap = {
   stethoscope: (
@@ -26,6 +27,7 @@ export default function Services() {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const { openBooking } = useBooking();
+  const { convertPrice, formatPrice } = useStore();
 
   useEffect(() => {
     fetch('/api/services')
@@ -121,6 +123,12 @@ export default function Services() {
                     </li>
                   ))}
                 </ul>
+
+                {service.priceUsd > 0 && (
+                  <span className="block text-xl font-extrabold text-medical-700 mb-3">
+                    {formatPrice(convertPrice(service.priceUsd))}
+                  </span>
+                )}
 
                 <button
                   onClick={openBooking}

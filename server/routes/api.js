@@ -52,6 +52,7 @@ const services = [
     description: 'Evaluación clínica completa, diagnóstico y plan de tratamiento personalizado para tu mascota.',
     icon: 'stethoscope',
     features: ['Examen físico completo', 'Diagnóstico por imagen', 'Seguimiento veterinario'],
+    priceUsd: 25.00,
   },
   {
     id: 'cirugia',
@@ -59,6 +60,7 @@ const services = [
     description: 'Quirófano equipado con tecnología de punta y monitoreo anestésico continuo para procedimientos seguros.',
     icon: 'scalpel',
     features: ['Cirugía general y blanda', 'Ortopedia', 'Monitoreo anestésico avanzado'],
+    priceUsd: 150.00,
   },
   {
     id: 'peluqueria',
@@ -66,6 +68,7 @@ const services = [
     description: 'Baño, corte y cuidado estético con productos hipoalergénicos y personal certificado Fear Free.',
     icon: 'scissors',
     features: ['Baño médico', 'Corte de raza', 'Limpieza dental básica'],
+    priceUsd: 20.00,
   },
   {
     id: 'laboratorio',
@@ -73,6 +76,7 @@ const services = [
     description: 'Análisis de sangre, orina y coprológicos con resultados el mismo día para decisiones rápidas.',
     icon: 'flask',
     features: ['Hematología completa', 'Bioquímica', 'Coprología y citología'],
+    priceUsd: 35.00,
   },
   {
     id: 'exoticos',
@@ -80,6 +84,7 @@ const services = [
     description: 'Atención especializada para conejos, aves, reptiles y mascotas no convencionales.',
     icon: 'paw',
     features: ['Medicina de aves', 'Reptiles y anfibios', 'Pequeños mamíferos'],
+    priceUsd: 40.00,
   },
   {
     id: 'urgencias',
@@ -87,6 +92,7 @@ const services = [
     description: 'Atención inmediata las 24 horas, los 365 días del año. Equipo de guardia siempre disponible.',
     icon: 'alert',
     features: ['Guardia permanente', 'UCI móvil', 'Reanimación y estabilización'],
+    priceUsd: 75.00,
   },
 ];
 
@@ -273,6 +279,7 @@ router.get('/services', async (_req, res) => {
         description: s.description,
         icon: s.icon,
         features: s.features || [],
+        priceUsd: Number(s.priceUsd || 0),
       }));
       return res.json(mapped);
     }
@@ -1311,7 +1318,7 @@ router.get('/admin/services', authMiddleware, async (_req, res) => {
   try {
     const dbServices = await prisma.service.findMany({ orderBy: { id: 'asc' } });
     if (dbServices.length > 0) {
-      const mapped = dbServices.map((s) => ({ id: s.slug, title: s.title, description: s.description, icon: s.icon, features: s.features || [] }));
+      const mapped = dbServices.map((s) => ({ id: s.slug, title: s.title, description: s.description, icon: s.icon, features: s.features || [], priceUsd: Number(s.priceUsd || 0) }));
       return res.json(mapped);
     }
     res.json(adminServiceStore);
@@ -1324,11 +1331,11 @@ router.get('/admin/services', authMiddleware, async (_req, res) => {
 router.put('/admin/services/:id', authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, description, icon, features } = req.body;
+    const { title, description, icon, features, priceUsd } = req.body;
     try {
-      const data = { ...(title !== undefined && { title }), ...(description !== undefined && { description }), ...(icon !== undefined && { icon }), ...(features !== undefined && { features }) };
+      const data = { ...(title !== undefined && { title }), ...(description !== undefined && { description }), ...(icon !== undefined && { icon }), ...(features !== undefined && { features }), ...(priceUsd !== undefined && { priceUsd }) };
       const updated = await prisma.service.update({ where: { slug: id }, data });
-      return res.json({ success: true, service: { id: updated.slug, title: updated.title, description: updated.description, icon: updated.icon, features: updated.features } });
+      return res.json({ success: true, service: { id: updated.slug, title: updated.title, description: updated.description, icon: updated.icon, features: updated.features, priceUsd: Number(updated.priceUsd || 0) } });
     } catch (dbErr) {
       const member = adminServiceStore.find((s) => s.id === id);
       if (!member) return res.status(404).json({ error: 'Servicio no encontrado' });
@@ -1336,6 +1343,7 @@ router.put('/admin/services/:id', authMiddleware, async (req, res) => {
       if (description !== undefined) member.description = description;
       if (icon !== undefined) member.icon = icon;
       if (features !== undefined) member.features = features;
+      if (priceUsd !== undefined) member.priceUsd = priceUsd;
       console.log(`✅ Servicio "${id}" actualizado en memoria`);
       return res.json({ success: true, service: member });
     }
@@ -1347,13 +1355,13 @@ router.put('/admin/services/:id', authMiddleware, async (req, res) => {
 
 router.post('/admin/services', authMiddleware, async (req, res) => {
   try {
-    const { id, title, description, icon, features } = req.body;
+    const { id, title, description, icon, features, priceUsd } = req.body;
     if (!id || !title) return res.status(400).json({ error: 'id y title son obligatorios' });
     try {
-      const created = await prisma.service.create({ data: { slug: id, title, description: description || '', icon: icon || '', features: features || [] } });
-      return res.status(201).json({ success: true, service: { id: created.slug, title: created.title, description: created.description, icon: created.icon, features: created.features } });
+      const created = await prisma.service.create({ data: { slug: id, title, description: description || '', icon: icon || '', features: features || [], priceUsd: Number(priceUsd || 0) } });
+      return res.status(201).json({ success: true, service: { id: created.slug, title: created.title, description: created.description, icon: created.icon, features: created.features, priceUsd: Number(created.priceUsd || 0) } });
     } catch (dbErr) {
-      const newService = { id, title, description: description || '', icon: icon || '', features: features || [] };
+      const newService = { id, title, description: description || '', icon: icon || '', features: features || [], priceUsd: Number(priceUsd || 0) };
       adminServiceStore.push(newService);
       return res.status(201).json({ success: true, service: newService });
     }

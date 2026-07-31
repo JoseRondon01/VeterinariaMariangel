@@ -25,6 +25,7 @@ function ServiceManager() {
   const [formDesc, setFormDesc] = useState('');
   const [formIcon, setFormIcon] = useState('');
   const [formFeatures, setFormFeatures] = useState('');
+  const [formPrice, setFormPrice] = useState('');
 
   const iconOptions = [
     { value: 'stethoscope', label: '🩺 Estetoscopio' },
@@ -54,7 +55,7 @@ function ServiceManager() {
   useEffect(() => { fetchServices(); }, []);
 
   const resetForm = () => {
-    setFormId(''); setFormTitle(''); setFormDesc(''); setFormIcon(''); setFormFeatures('');
+    setFormId(''); setFormTitle(''); setFormDesc(''); setFormIcon(''); setFormFeatures(''); setFormPrice('');
     setEditingId(null); setShowForm(false);
   };
 
@@ -67,6 +68,7 @@ function ServiceManager() {
     setFormDesc(s.description || '');
     setFormIcon(s.icon || '');
     setFormFeatures(Array.isArray(s.features) ? s.features.join('\n') : '');
+    setFormPrice(String(s.priceUsd || 0));
     setShowForm(true);
   };
 
@@ -84,6 +86,7 @@ function ServiceManager() {
         description: formDesc.trim(),
         icon: formIcon,
         features: formFeatures.trim() ? formFeatures.split('\n').map((f) => f.trim()).filter(Boolean) : [],
+        priceUsd: Number(formPrice || 0),
       };
       const url = editingId ? `/api/admin/services/${editingId}` : '/api/admin/services';
       const method = editingId ? 'PUT' : 'POST';
@@ -150,6 +153,11 @@ function ServiceManager() {
               <textarea value={formFeatures} onChange={(e) => setFormFeatures(e.target.value)} rows="3"
                 placeholder="Examen físico completo&#10;Diagnóstico por imagen&#10;Seguimiento veterinario"
                 className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Precio (USD)</label>
+              <input type="number" step="0.01" value={formPrice} onChange={(e) => setFormPrice(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" placeholder="0.00" />
             </div>
             <div className="sm:col-span-2">
               <label className="block text-xs font-medium text-slate-500 mb-1">Descripción</label>
