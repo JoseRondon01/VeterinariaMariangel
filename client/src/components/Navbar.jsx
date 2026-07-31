@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { useBooking } from './BookingContext.jsx';
 
-const EMERGENCY_PHONE = '+582125550199';
-const EMERGENCY_TEL = 'tel:+582125550199';
+const EMERGENCY_PHONE = '+541127258138';
+const EMERGENCY_TEL = 'tel:+541127258138';
 
 const navLinks = [
   { to: '/', label: 'Inicio' },

@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
 import { useBooking } from './BookingContext.jsx';
 
-const EMERGENCY_TEL = 'tel:+582125550199';
-const EMERGENCY_PHONE = '+58 212 555 0199';
+const EMERGENCY_TEL = 'tel:+541127258138';
+const EMERGENCY_PHONE = '+54 11 2725 8138';
 
 const schedule = [
   { day: 'Lunes a Viernes', hours: '8:00 AM - 8:00 PM' },
