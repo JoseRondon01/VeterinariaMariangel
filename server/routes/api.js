@@ -284,12 +284,58 @@ router.get('/team', async (_req, res) => {
   }
 });
 router.get('/testimonials', (_req, res) => res.json(testimonials));
-router.get('/blog', (_req, res) => res.json(blog));
 
-router.get('/blog/:slug', (req, res) => {
-  const post = blog.find((p) => p.slug === req.params.slug);
-  if (!post) return res.status(404).json({ error: 'Artículo no encontrado' });
-  res.json(post);
+// Admin blog store (memoria temporal hasta que exista la tabla)
+const adminBlogStore = blog.map((b) => ({ ...b }));
+
+router.get('/blog', async (_req, res) => {
+  try {
+    const posts = await prisma.blogPost.findMany({
+      where: { published: true },
+      orderBy: { createdAt: 'desc' },
+    });
+    if (posts.length > 0) {
+      const mapped = posts.map((p) => ({
+        id: p.id,
+        slug: p.slug,
+        title: p.title,
+        excerpt: p.excerpt,
+        category: p.category,
+        date: p.publishedAt ? new Date(p.publishedAt).toISOString().split('T')[0] : '',
+        readingTime: p.readingTime || '5 min',
+        image: p.coverImage,
+        content: p.content,
+        tags: p.tags || [],
+      }));
+      return res.json(mapped);
+    }
+    res.json(adminBlogStore);
+  } catch (err) {
+    console.error('Error fetching blog from DB, fallback to memory:', err.message);
+    res.json(adminBlogStore);
+  }
+});
+
+router.get('/blog/:slug', async (req, res) => {
+  try {
+    const post = await prisma.blogPost.findUnique({ where: { slug: req.params.slug } });
+    if (post) {
+      return res.json({
+        id: post.id, slug: post.slug, title: post.title,
+        excerpt: post.excerpt, category: post.category,
+        date: post.publishedAt ? new Date(post.publishedAt).toISOString().split('T')[0] : '',
+        readingTime: post.readingTime || '5 min', image: post.coverImage,
+        content: post.content, tags: post.tags || [],
+      });
+    }
+    const memPost = adminBlogStore.find((p) => p.slug === req.params.slug);
+    if (!memPost) return res.status(404).json({ error: 'Artículo no encontrado' });
+    res.json(memPost);
+  } catch {
+    const post = adminBlogStore.find((p) => p.slug === req.params.slug);
+    if (!post) return res.status(404).json({ error: 'Artículo no encontrado' });
+    res.json(post);
+  }
 });
 
 router.get('/booking/species', (_req, res) => res.json(species));
@@ -1006,6 +1052,120 @@ router.put('/admin/team/:id', authMiddleware, async (req, res) => {
   } catch (err) {
     console.error('Error updating veterinarian:', err);
     res.status(500).json({ error: 'Error al actualizar veterinario' });
+  }
+});
+
+// ===========================================================================
+// RUTAS ADMIN — Gestión del Blog (Consejos)
+// ===========================================================================
+
+router.get('/admin/blog', authMiddleware, async (_req, res) => {
+  try {
+    const posts = await prisma.blogPost.findMany({ orderBy: { createdAt: 'desc' } });
+    if (posts.length > 0) return res.json(posts);
+    res.json(adminBlogStore);
+  } catch (err) {
+    console.error('Error fetching admin blog, fallback to memory:', err.message);
+    res.json(adminBlogStore);
+  }
+});
+
+router.put('/admin/blog/:id', authMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, excerpt, category, date, readingTime, content, image, slug, published } = req.body;
+
+    try {
+      const data = {};
+      if (title !== undefined) data.title = title;
+      if (excerpt !== undefined) data.excerpt = excerpt;
+      if (category !== undefined) data.category = category;
+      if (readingTime !== undefined) data.readingTime = readingTime;
+      if (content !== undefined) data.content = content;
+      if (image !== undefined) data.coverImage = image;
+      if (published !== undefined) data.published = published;
+      if (slug !== undefined) data.slug = slug;
+      if (date !== undefined) data.publishedAt = new Date(date);
+
+      const updated = await prisma.blogPost.update({
+        where: { id: Number(id) },
+        data,
+      });
+      console.log(`✅ Blog #${id} actualizado en DB: ${updated.title}`);
+      return res.json({ success: true, post: updated });
+    } catch (dbErr) {
+      console.log('DB not ready, saving blog to memory:', dbErr.message);
+      const member = adminBlogStore.find((b) => b.id === Number(id));
+      if (!member) return res.status(404).json({ error: 'Artículo no encontrado' });
+      if (title !== undefined) member.title = title;
+      if (excerpt !== undefined) member.excerpt = excerpt;
+      if (category !== undefined) member.category = category;
+      if (date !== undefined) member.date = date;
+      if (readingTime !== undefined) member.readingTime = readingTime;
+      if (content !== undefined) member.content = content;
+      if (image !== undefined) member.image = image;
+      if (slug !== undefined) member.slug = slug;
+      console.log(`✅ Blog #${id} actualizado en memoria: ${member.title}`);
+      return res.json({ success: true, post: member });
+    }
+  } catch (err) {
+    console.error('Error updating blog:', err);
+    res.status(500).json({ error: 'Error al actualizar artículo' });
+  }
+});
+
+router.post('/admin/blog', authMiddleware, async (req, res) => {
+  try {
+    const { title, excerpt, category, date, readingTime, content, image, slug } = req.body;
+    if (!title) return res.status(400).json({ error: 'El título es obligatorio' });
+
+    const newSlug = slug || title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '').slice(0, 100);
+
+    try {
+      const post = await prisma.blogPost.create({
+        data: {
+          title, slug: newSlug,
+          excerpt: excerpt || '', category: category || 'Salud Preventiva',
+          readingTime: readingTime || '5 min', content: content || '',
+          coverImage: image || null, published: true,
+          publishedAt: date ? new Date(date) : new Date(),
+        },
+      });
+      console.log(`✅ Blog creado en DB: ${post.title}`);
+      return res.status(201).json({ success: true, post });
+    } catch (dbErr) {
+      console.log('DB not ready, creating blog in memory:', dbErr.message);
+      const newId = Math.max(0, ...adminBlogStore.map((b) => b.id)) + 1;
+      const newPost = {
+        id: newId, slug: newSlug, title, excerpt: excerpt || '', category: category || 'Salud Preventiva',
+        date: date || new Date().toISOString().split('T')[0],
+        readingTime: readingTime || '5 min', image: image || null, content: content || '',
+      };
+      adminBlogStore.push(newPost);
+      return res.status(201).json({ success: true, post: newPost });
+    }
+  } catch (err) {
+    console.error('Error creating blog:', err);
+    res.status(500).json({ error: 'Error al crear artículo' });
+  }
+});
+
+router.delete('/admin/blog/:id', authMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+    try {
+      await prisma.blogPost.delete({ where: { id: Number(id) } });
+      return res.json({ success: true });
+    } catch (dbErr) {
+      console.log('DB not ready, deleting blog from memory:', dbErr.message);
+      const idx = adminBlogStore.findIndex((b) => b.id === Number(id));
+      if (idx === -1) return res.status(404).json({ error: 'Artículo no encontrado' });
+      adminBlogStore.splice(idx, 1);
+      return res.json({ success: true });
+    }
+  } catch (err) {
+    console.error('Error deleting blog:', err);
+    res.status(500).json({ error: 'Error al eliminar artículo' });
   }
 });
 

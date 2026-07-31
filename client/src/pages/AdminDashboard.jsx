@@ -1199,6 +1199,230 @@ function TeamManager() {
 }
 
 // ===========================================================================
+// Componente: BlogManager
+// ===========================================================================
+function BlogManager() {
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+  const [msg, setMsg] = useState('');
+
+  // Form state
+  const [formTitle, setFormTitle] = useState('');
+  const [formExcerpt, setFormExcerpt] = useState('');
+  const [formCategory, setFormCategory] = useState('');
+  const [formDate, setFormDate] = useState('');
+  const [formReadingTime, setFormReadingTime] = useState('');
+  const [formContent, setFormContent] = useState('');
+  const [formSlug, setFormSlug] = useState('');
+  const [formImg, setFormImg] = useState('');
+  const [formImgUploading, setFormImgUploading] = useState(false);
+  const [formImgPreview, setFormImgPreview] = useState(null);
+
+  const fetchPosts = () => {
+    setLoading(true);
+    fetch('/api/admin/blog', { headers: API_HEADERS() })
+      .then((r) => r.json())
+      .then((data) => setPosts(Array.isArray(data) ? data : []))
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => { fetchPosts(); }, []);
+
+  const resetForm = () => {
+    setFormTitle(''); setFormExcerpt(''); setFormCategory(''); setFormDate('');
+    setFormReadingTime(''); setFormContent(''); setFormSlug('');
+    setFormImg(''); setFormImgPreview(null); setEditingId(null); setShowForm(false);
+  };
+
+  const openNew = () => { resetForm(); setShowForm(true); };
+
+  const openEdit = (p) => {
+    setEditingId(p.id);
+    setFormTitle(p.title || '');
+    setFormExcerpt(p.excerpt || '');
+    setFormCategory(p.category || '');
+    setFormDate(p.date || '');
+    setFormReadingTime(p.readingTime || '');
+    setFormContent(p.content || '');
+    setFormSlug(p.slug || '');
+    setFormImg(p.image || '');
+    setFormImgPreview(p.image || null);
+    setShowForm(true);
+  };
+
+  const uploadImage = async (file) => {
+    setFormImgUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('image', file);
+      const token = localStorage.getItem('admin_token');
+      const res = await fetch('/api/admin/upload', { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setFormImg(data.url);
+      setFormImgPreview(data.url);
+    } catch (err) {
+      alert('Error al subir imagen: ' + err.message);
+    } finally {
+      setFormImgUploading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!formTitle.trim()) { setMsg('❌ El título es obligatorio'); setTimeout(() => setMsg(''), 3000); return; }
+    setSaving(true); setMsg('');
+    try {
+      const body = {
+        title: formTitle.trim(),
+        excerpt: formExcerpt.trim(),
+        category: formCategory.trim(),
+        date: formDate,
+        readingTime: formReadingTime.trim(),
+        content: formContent.trim(),
+        image: formImg.trim() || null,
+        slug: formSlug.trim() || undefined,
+      };
+      const url = editingId ? `/api/admin/blog/${editingId}` : '/api/admin/blog';
+      const method = editingId ? 'PUT' : 'POST';
+      const res = await fetch(url, { method, headers: API_HEADERS(), body: JSON.stringify(body) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setMsg(editingId ? '✅ Artículo actualizado' : '✅ Artículo creado');
+      resetForm();
+      fetchPosts();
+    } catch (err) { setMsg('❌ Error: ' + err.message); }
+    finally { setSaving(false); setTimeout(() => setMsg(''), 4000); }
+  };
+
+  const handleDelete = async (id, title) => {
+    if (!confirm(`¿Eliminar "${title}"? Esta acción no se puede deshacer.`)) return;
+    try {
+      const res = await fetch(`/api/admin/blog/${id}`, { method: 'DELETE', headers: API_HEADERS() });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      fetchPosts();
+    } catch (err) { alert('Error: ' + err.message); }
+  };
+
+  if (loading) return <div className="animate-pulse bg-slate-100 h-64 rounded-xl" />;
+
+  return (
+    <div className="bg-white rounded-2xl shadow-md p-6">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-extrabold text-slate-800 flex items-center gap-2">
+          <span>📝</span> Gestión de Consejos (Blog)
+        </h2>
+        <button onClick={openNew} className="px-4 py-2 bg-medical-600 text-white rounded-xl font-bold text-sm hover:bg-medical-700 transition">
+          + Nuevo Artículo
+        </button>
+      </div>
+      <p className="text-xs text-slate-400 mb-4">Edita los artículos que aparecen en la sección "Blog de Salud" del sitio web.</p>
+
+      {msg && <div className={`mb-4 p-3 rounded-xl text-sm font-medium ${msg.startsWith('✅') ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>{msg}</div>}
+
+      {/* Formulario */}
+      {showForm && (
+        <div className="mb-6 border border-slate-200 rounded-xl p-4 bg-slate-50">
+          <h3 className="font-bold text-slate-700 text-sm mb-3">{editingId ? 'Editar Artículo' : 'Nuevo Artículo'}</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Título *</label>
+              <input type="text" value={formTitle} onChange={(e) => setFormTitle(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Categoría</label>
+              <select value={formCategory} onChange={(e) => setFormCategory(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-medical-500 outline-none">
+                <option value="">Sin categoría</option>
+                <option value="Salud Preventiva">Salud Preventiva</option>
+                <option value="Urgencias">Urgencias</option>
+                <option value="Nutrición">Nutrición</option>
+                <option value="Cuidado Dental">Cuidado Dental</option>
+                <option value="Bienestar General">Bienestar General</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Fecha</label>
+              <input type="date" value={formDate} onChange={(e) => setFormDate(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Tiempo de lectura</label>
+              <input type="text" value={formReadingTime} onChange={(e) => setFormReadingTime(e.target.value)} placeholder="5 min" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-medium text-slate-500 mb-1">Extracto</label>
+              <textarea value={formExcerpt} onChange={(e) => setFormExcerpt(e.target.value)} rows="2" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-medium text-slate-500 mb-1">Contenido completo</label>
+              <textarea value={formContent} onChange={(e) => setFormContent(e.target.value)} rows="5" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Slug (URL)</label>
+              <input type="text" value={formSlug} onChange={(e) => setFormSlug(e.target.value)} placeholder="auto-generado" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-medical-500 outline-none" />
+            </div>
+            {/* Selector de imagen Cloudinary */}
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-medium text-slate-500 mb-1">Imagen del Artículo</label>
+              {formImgPreview && (
+                <div className="relative mb-2">
+                  <img src={formImgPreview} alt="Preview" className="w-full h-40 object-cover rounded-lg border border-slate-200" />
+                  <button onClick={() => { setFormImg(''); setFormImgPreview(null); }} className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold hover:bg-red-600">{'\u00D7'}</button>
+                </div>
+              )}
+              <div className="flex gap-2">
+                <label className="flex-1 px-4 py-2.5 bg-slate-100 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-200 transition cursor-pointer text-center">
+                  {formImgUploading ? '\u23F3 Subiendo...' : '\uD83D\uDCF7 Subir Imagen'}
+                  <input type="file" accept="image/*" onChange={async (e) => { const fl = e.target.files?.[0]; if (!fl) return; setFormImgPreview(URL.createObjectURL(fl)); await uploadImage(fl); }} className="hidden" disabled={formImgUploading} />
+                </label>
+                <label className="px-4 py-2.5 bg-slate-100 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-200 transition cursor-pointer text-center">
+                  {'\uD83D\uDCF8'} C\u00E1mara
+                  <input type="file" accept="image/*" capture="environment" onChange={async (e) => { const fl = e.target.files?.[0]; if (!fl) return; setFormImgPreview(URL.createObjectURL(fl)); await uploadImage(fl); }} className="hidden" disabled={formImgUploading} />
+                </label>
+              </div>
+              <input type="text" value={formImg} onChange={(e) => { setFormImg(e.target.value); setFormImgPreview(e.target.value || null); }} placeholder="O pega URL externa..." className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm mt-2 focus:ring-2 focus:ring-medical-500 outline-none" />
+            </div>
+          </div>
+          <div className="flex gap-2 mt-4">
+            <button onClick={handleSave} disabled={saving} className="px-5 py-2 bg-medical-600 text-white rounded-xl font-bold text-sm hover:bg-medical-700 transition disabled:opacity-50">{saving ? 'Guardando...' : (editingId ? 'Actualizar' : 'Crear')}</button>
+            <button onClick={resetForm} className="px-5 py-2 border border-slate-200 rounded-xl text-sm text-slate-600 hover:bg-slate-100 transition">Cancelar</button>
+          </div>
+        </div>
+      )}
+
+      {/* Lista de artículos */}
+      {posts.length === 0 ? (
+        <div className="text-center py-8 text-slate-400"><p className="text-3xl mb-2">📝</p><p>No hay artículos registrados.</p></div>
+      ) : (
+        <div className="space-y-3">
+          {posts.map((post) => (
+            <div key={post.id} className="flex items-center gap-4 border border-slate-200 rounded-xl p-4 hover:bg-slate-50 transition">
+              <img src={post.image || ''} alt={post.title} className="w-20 h-16 rounded-lg object-cover shrink-0" />
+              <div className="flex-1 min-w-0">
+                <h3 className="font-bold text-slate-800 text-sm truncate">{post.title}</h3>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="chip bg-medical-50 text-medical-600 text-xs">{post.category}</span>
+                  <span className="text-xs text-slate-400">{post.date}</span>
+                  <span className="text-xs text-slate-400">· {post.readingTime}</span>
+                </div>
+                <p className="text-xs text-slate-500 mt-1 truncate">{post.excerpt}</p>
+              </div>
+              <div className="flex gap-1 shrink-0">
+                <button onClick={() => openEdit(post)} className="px-3 py-1.5 bg-slate-100 text-slate-700 text-xs rounded-lg font-medium hover:bg-slate-200 transition">Editar</button>
+                <button onClick={() => handleDelete(post.id, post.title)} className="px-3 py-1.5 bg-red-50 text-red-600 text-xs rounded-lg font-medium hover:bg-red-100 transition">Eliminar</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ===========================================================================
 // Componente: DailySummary
 // ===========================================================================
 function DailySummary() {
@@ -1344,6 +1568,7 @@ export default function AdminDashboard() {
   const tabs = [
     { id: 'business', label: 'Info Negocio', icon: '🏢' },
     { id: 'team', label: 'Equipo', icon: '👥' },
+    { id: 'blog', label: 'Consejos', icon: '📝' },
     { id: 'products', label: 'Productos', icon: '📦' },
     { id: 'orders', label: 'Verificar Pagos', icon: '📋' },
     { id: 'summary', label: 'Resumen Diario', icon: '📊' },
@@ -1403,6 +1628,7 @@ export default function AdminDashboard() {
         {/* Contenido del tab */}
         {activeTab === 'business' && <BusinessInfoManager />}
         {activeTab === 'team' && <TeamManager />}
+        {activeTab === 'blog' && <BlogManager />}
         {activeTab === 'products' && <ProductManager />}
         {activeTab === 'orders' && <OrderVerificationTable />}
         {activeTab === 'summary' && <DailySummary />}
