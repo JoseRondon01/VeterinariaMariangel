@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useStore } from './StoreContext.jsx';
+import { useBusinessInfo } from './BusinessInfoContext.jsx';
 
 const STEPS = ['Datos de Contacto', 'Método de Pago', 'Confirmar Pedido'];
 
@@ -20,6 +21,7 @@ export default function CheckoutModal({ open, onClose }) {
     formatPrice,
     selectedCurrency,
   } = useStore();
+  const { getWhatsAppUrl, info: bizInfo } = useBusinessInfo();
 
   const [step, setStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
@@ -125,8 +127,8 @@ export default function CheckoutModal({ open, onClose }) {
       setSuccess(true);
       clearCart();
 
-      // Redirigir a WhatsApp con resumen
-      const adminPhone = '+582125550199';
+      // Redirigir a WhatsApp con resumen (usa el WhatsApp configurado en el admin)
+      const phoneDigits = (bizInfo?.whatsappNumber || '541127258138').replace(/\D/g, '');
       const whatsappMsg = encodeURIComponent(
         `🐾 *Nuevo Pedido - Veterinaria Mariangel*\n\n` +
         `*Cliente:* ${customerName}\n*Teléfono:* ${customerPhone}\n*Dirección:* ${customerAddress || 'No especificada'}\n` +
@@ -136,9 +138,9 @@ export default function CheckoutModal({ open, onClose }) {
         `_El pago está pendiente de verificación._`
       );
 
-      // Abrir WhatsApp después de 2 segundos si estamos en móvil
+      // Abrir WhatsApp después de 2 segundos
       setTimeout(() => {
-        window.open(`https://wa.me/${adminPhone}?text=${whatsappMsg}`, '_blank');
+        window.open(`https://api.whatsapp.com/send/?phone=${phoneDigits}&text=${whatsappMsg}&type=phone_number&app_absent=0`, '_blank');
       }, 2000);
     } catch (err) {
       setError(err.message || 'Error al procesar el pedido. Intenta de nuevo.');

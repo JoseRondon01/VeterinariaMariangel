@@ -454,8 +454,8 @@ function BusinessInfoManager() {
         // Fallback con datos por defecto mientras la API no esté lista
         setBusinessName('Veterinaria Mariangel');
         setTagline('Clínica veterinaria comprometida con el bienestar de tu mascota.');
-        setPhone('+584141234567');
-        setWhatsappNumber('584141234567');
+        setPhone('+54 11 2725 8138');
+        setWhatsappNumber('541127258138');
         setEmail('contacto@veterinariamariangel.com');
         setAddress('Av. Principal de Las Mercedes, Caracas');
         setMapEmbedUrl('');
