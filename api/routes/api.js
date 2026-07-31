@@ -138,7 +138,7 @@ const blog = [
     category: 'Salud Preventiva',
     date: '2026-07-15',
     readingTime: '6 min',
-    image: 'https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=800&h=500&fit=crop',
+    image: '/blog/1.jpg',
     content: 'La vacunación es el pilar de la medicina preventiva en cachorros. El calendario inicia entre las 6 y 8 semanas...',
   },
   {
@@ -149,7 +149,7 @@ const blog = [
     category: 'Urgencias',
     date: '2026-07-10',
     readingTime: '5 min',
-    image: 'https://images.unsplash.com/photo-1518791841217-8f162f1e1131?w=800&h=500&fit=crop',
+    image: '/blog/2.jpg',
     content: 'Reconocer una emergencia a tiempo puede marcar la diferencia. Dificultad respiratoria, vómito persistente...',
   },
   {
@@ -160,7 +160,7 @@ const blog = [
     category: 'Salud Preventiva',
     date: '2026-07-05',
     readingTime: '4 min',
-    image: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dea?w=800&h=500&fit=crop',
+    image: '/blog/3.jpg',
     content: 'La salud dental felina es frecuentemente subestimada. Una higiene adecuada previene dolor crónico...',
   },
   {
@@ -171,7 +171,7 @@ const blog = [
     category: 'Nutrición',
     date: '2026-06-28',
     readingTime: '7 min',
-    image: 'https://images.unsplash.com/photo-1583511655826-05700d52f4d9?w=800&h=500&fit=crop',
+    image: '/blog/4.jpg',
     content: 'Los perros senior tienen necesidades nutricionales específicas. Proteínas de alta calidad, control calórico...',
   },
 ];
