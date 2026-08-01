@@ -506,6 +506,110 @@ router.get('/payment-config', async (_req, res) => {
 });
 
 // ===========================================================================
+// RUTAS — Información del Negocio (Business Info)
+// ===========================================================================
+
+// Pública: usada por el BusinessInfoContext en el frontend
+router.get('/business-info', async (_req, res) => {
+  try {
+    const info = await prisma.businessInfo.findFirst({ orderBy: { id: 'asc' } });
+    if (info) return res.json(info);
+  } catch (err) {
+    console.error('Error fetching business-info from DB:', err.message);
+  }
+  // Fallback con datos por defecto
+  res.json({
+    businessName: 'Veterinaria Mariangel',
+    tagline: 'Cuidamos a tu mascota como parte de la familia.',
+    phone: '+584141234567',
+    whatsappNumber: '584141234567',
+    email: 'contacto@veterinariamariangel.com',
+    address: 'Av. Rotaria, San Cristóbal, Táchira',
+    mapEmbedUrl: '',
+    schedule: {
+      weekdays: { label: 'Lunes a Viernes', hours: '8:00 AM - 8:00 PM' },
+      saturday: { label: 'Sábado', hours: '9:00 AM - 2:00 PM' },
+      sunday: { label: 'Domingo', hours: 'Cerrado (solo urgencias)' },
+      emergency: { label: 'Urgencias', hours: '24/7 · 365 días', highlight: true },
+    },
+    social: {
+      facebook: '',
+      instagram: '',
+      twitter: '',
+      tiktok: '',
+    },
+  });
+});
+
+// Admin: obtener info del negocio
+router.get('/admin/business-info', authMiddleware, async (_req, res) => {
+  try {
+    const info = await prisma.businessInfo.findFirst({ orderBy: { id: 'asc' } });
+    if (info) return res.json(info);
+  } catch (err) {
+    console.error('Error fetching admin business-info from DB:', err.message);
+  }
+  // Fallback con datos por defecto
+  res.json({
+    businessName: 'Veterinaria Mariangel',
+    tagline: 'Cuidamos a tu mascota como parte de la familia.',
+    phone: '+584141234567',
+    whatsappNumber: '584141234567',
+    email: 'contacto@veterinariamariangel.com',
+    address: 'Av. Rotaria, San Cristóbal, Táchira',
+    mapEmbedUrl: '',
+    schedule: {
+      weekdays: { label: 'Lunes a Viernes', hours: '8:00 AM - 8:00 PM' },
+      saturday: { label: 'Sábado', hours: '9:00 AM - 2:00 PM' },
+      sunday: { label: 'Domingo', hours: 'Cerrado (solo urgencias)' },
+      emergency: { label: 'Urgencias', hours: '24/7 · 365 días', highlight: true },
+    },
+    social: {
+      facebook: '',
+      instagram: '',
+      twitter: '',
+      tiktok: '',
+    },
+  });
+});
+
+// Admin: actualizar info del negocio
+router.put('/admin/business-info', authMiddleware, async (req, res) => {
+  try {
+    const { businessName, tagline, phone, whatsappNumber, email, address, mapEmbedUrl, schedule, social } = req.body;
+    const data = {};
+    if (businessName !== undefined) data.businessName = businessName;
+    if (tagline !== undefined) data.tagline = tagline;
+    if (phone !== undefined) data.phone = phone;
+    if (whatsappNumber !== undefined) data.whatsappNumber = whatsappNumber;
+    if (email !== undefined) data.email = email;
+    if (address !== undefined) data.address = address;
+    if (mapEmbedUrl !== undefined) data.mapEmbedUrl = mapEmbedUrl;
+    if (schedule !== undefined) data.schedule = schedule;
+    if (social !== undefined) data.social = social;
+
+    // Buscar registro existente o crear uno nuevo (upsert)
+    const existing = await prisma.businessInfo.findFirst({ orderBy: { id: 'asc' } });
+    let info;
+    if (existing) {
+      info = await prisma.businessInfo.update({ where: { id: existing.id }, data });
+    } else {
+      // Asegurar campos requeridos
+      if (!data.businessName) data.businessName = 'Veterinaria Mariangel';
+      if (!data.phone) data.phone = '+584141234567';
+      if (!data.whatsappNumber) data.whatsappNumber = '584141234567';
+      if (!data.email) data.email = 'contacto@veterinariamariangel.com';
+      info = await prisma.businessInfo.create({ data });
+    }
+    console.log('✅ Business info actualizada:', info.businessName);
+    res.json({ success: true, info });
+  } catch (err) {
+    console.error('Error updating business-info:', err);
+    res.status(500).json({ error: 'Error al actualizar información del negocio: ' + err.message });
+  }
+});
+
+// ===========================================================================
 // RUTA: Crear orden (pedido)
 // ===========================================================================
 
@@ -870,133 +974,6 @@ router.put('/admin/payment-config/:id', authMiddleware, async (req, res) => {
   } catch (err) {
     console.error('Error updating payment config:', err);
     res.status(500).json({ error: 'Error al actualizar configuración de pago' });
-  }
-});
-
-// ===========================================================================
-// RUTA PÚBLICA — Información del negocio
-// ===========================================================================
-
-router.get('/business-info', async (_req, res) => {
-  const defaults = {
-    id: 1,
-    businessName: 'Veterinaria Mariangel',
-    tagline: 'Clínica veterinaria comprometida con el bienestar de tu mascota.',
-    phone: '+54 11 2725 8138',
-    whatsappNumber: '541127258138',
-    email: 'contacto@veterinariamariangel.com',
-    address: 'Av. Principal de Las Mercedes, Caracas',
-    mapEmbedUrl: '',
-    schedule: {
-      weekdays: { label: 'Lunes a Viernes', hours: '8:00 AM - 8:00 PM' },
-      saturday: { label: 'Sábado', hours: '9:00 AM - 2:00 PM' },
-      sunday: { label: 'Domingo', hours: 'Cerrado (solo urgencias)' },
-      emergency: { label: 'Urgencias', hours: '24/7 · 365 días', highlight: true },
-    },
-    social: { facebook: '', instagram: '', twitter: '', tiktok: '' },
-    hero: null,
-  };
-  try {
-    let info = await prisma.businessInfo.findFirst();
-    if (!info) {
-      try {
-        info = await prisma.businessInfo.create({
-          data: {
-            businessName: defaults.businessName,
-            phone: defaults.phone,
-            whatsappNumber: defaults.whatsappNumber,
-            email: defaults.email,
-            address: defaults.address,
-            schedule: defaults.schedule,
-            social: defaults.social,
-          },
-        });
-      } catch (createErr) {
-        console.warn('No se pudo crear businessInfo (posible columna hero faltante):', createErr.message);
-        return res.json(defaults);
-      }
-    }
-    res.json(info);
-  } catch (err) {
-    console.warn('Error fetching business info (probable columna hero faltante en BD):', err.message);
-    res.json(defaults);
-  }
-});
-
-// ===========================================================================
-// RUTAS ADMIN — Información del negocio
-// ===========================================================================
-
-router.get('/admin/business-info', authMiddleware, async (_req, res) => {
-  const defaults = {
-    id: 1,
-    businessName: 'Veterinaria Mariangel',
-    tagline: '',
-    phone: '+584141234567',
-    whatsappNumber: '584141234567',
-    email: 'contacto@veterinariamariangel.com',
-    address: '',
-    mapEmbedUrl: '',
-    schedule: {},
-    social: {},
-    hero: null,
-  };
-  try {
-    let info = await prisma.businessInfo.findFirst();
-    if (!info) {
-      try {
-        info = await prisma.businessInfo.create({ data: { businessName: defaults.businessName, phone: defaults.phone, whatsappNumber: defaults.whatsappNumber, email: defaults.email, schedule: {}, social: {} } });
-      } catch (createErr) {
-        console.warn('No se pudo crear admin businessInfo:', createErr.message);
-        return res.json(defaults);
-      }
-    }
-    res.json(info);
-  } catch (err) {
-    console.warn('Error fetching admin business info (probable columna hero faltante):', err.message);
-    res.json(defaults);
-  }
-});
-
-router.put('/admin/business-info', authMiddleware, async (req, res) => {
-  try {
-    const { businessName, tagline, phone, whatsappNumber, email, address, mapEmbedUrl, schedule, social } = req.body;
-    let info;
-    try {
-      info = await prisma.businessInfo.findFirst();
-    } catch (findErr) {
-      console.warn('findFirst falló (probable columna hero faltante), intentando raw update:', findErr.message);
-    }
-
-    const updateData = {};
-    if (businessName !== undefined) updateData.businessName = businessName;
-    if (tagline !== undefined) updateData.tagline = tagline;
-    if (phone !== undefined) updateData.phone = phone;
-    if (whatsappNumber !== undefined) updateData.whatsappNumber = whatsappNumber;
-    if (email !== undefined) updateData.email = email;
-    if (address !== undefined) updateData.address = address;
-    if (mapEmbedUrl !== undefined) updateData.mapEmbedUrl = mapEmbedUrl;
-    if (schedule !== undefined) updateData.schedule = schedule;
-    if (social !== undefined) updateData.social = social;
-
-    try {
-      if (!info) {
-        info = await prisma.businessInfo.create({
-          data: { businessName: businessName || 'Veterinaria Mariangel', ...updateData },
-        });
-      } else {
-        info = await prisma.businessInfo.update({ where: { id: info.id }, data: updateData });
-      }
-      console.log('✅ Información del negocio actualizada');
-      res.json({ success: true, info });
-    } catch (dbErr) {
-      console.warn('Error DB al guardar business-info (probable columna hero faltante):', dbErr.message);
-      // Si falla por la columna hero, devolver éxito simulado con los datos enviados
-      res.json({ success: true, info: { id: info?.id || 1, ...updateData, schedule: schedule || {}, social: social || {} }, warning: 'Guardado parcial. Ejecuta migración de BD para columna hero.' });
-    }
-  } catch (err) {
-    console.error('Error updating business info:', err);
-    res.status(500).json({ error: 'Error al actualizar información del negocio' });
   }
 });
 
