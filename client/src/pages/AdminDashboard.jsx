@@ -2085,11 +2085,11 @@ function DailySummary() {
               <p className="text-xs text-green-600 font-medium">Total USD</p>
             </div>
             <div className="bg-aqua-50 rounded-xl p-3 text-center">
-              <span className="text-lg font-extrabold text-aqua-700">{formatVes(summary.byCurrency?.VES || 0)}</span>
+              <span className="text-lg font-extrabold text-aqua-700">{formatVes(summary.totalVesConverted || 0)}</span>
               <p className="text-xs text-aqua-600 font-medium">Total VES</p>
             </div>
             <div className="bg-aqua-50 rounded-xl p-3 text-center">
-              <span className="text-lg font-extrabold text-aqua-700">{formatCop(summary.byCurrency?.COP || 0)}</span>
+              <span className="text-lg font-extrabold text-aqua-700">{formatCop(summary.totalCopConverted || 0)}</span>
               <p className="text-xs text-aqua-600 font-medium">Total COP</p>
             </div>
           </div>
