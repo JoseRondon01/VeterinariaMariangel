@@ -242,7 +242,6 @@ router.get('/categories', async (_req, res) => {
 });
 
 // Tasas de cambio - con fallback. rateToUsd = cuantas unidades de moneda local por 1 USD.
-// El server/index.js hace auto-sync al arrancar para mantener las tasas correctas en BD.
 router.get('/exchange-rates', async (_req, res) => {
   try {
     const rates = await prisma.exchangeRate.findMany();
@@ -433,7 +432,6 @@ router.get('/admin/verify', authMiddleware, (req, res) => {
 // ===========================================================================
 // RUTAS ADMIN - Tasas de cambio (con fallback)
 // rateToUsd = cuantas unidades de moneda local por 1 USD
-// El auto-sync en server/index.js mantiene las tasas correctas en BD.
 // ===========================================================================
 
 router.get('/admin/exchange-rates', authMiddleware, async (_req, res) => {
@@ -525,7 +523,7 @@ router.post('/admin/orders/:id/reject', authMiddleware, async (req, res) => {
 
 // ===========================================================================
 // RUTAS ADMIN - Resumen diario
-// Recalcula totales en VES y COP con tasas actuales desde BD
+// Calcula totales convertidos con tasas actuales desde BD
 // ===========================================================================
 
 router.get('/admin/daily-summary', authMiddleware, async (req, res) => {
@@ -536,29 +534,51 @@ router.get('/admin/daily-summary', authMiddleware, async (req, res) => {
     const endDate = new Date(targetDate);
     endDate.setDate(endDate.getDate() + 1);
 
-    // Cargar tasas actuales
+    // 1. Cargar tasas actuales
     const dbRates = await prisma.exchangeRate.findMany();
     const rateMap = {};
     dbRates.forEach((r) => { rateMap[r.currencyCode] = Number(r.rateToUsd); });
     const rateVes = rateMap.VES || 1066;
     const rateCop = rateMap.COP || 3200;
 
-    const orders = await prisma.order.findMany({ where: { createdAt: { gte: targetDate, lt: endDate }, paymentStatus: 'approved' }, orderBy: { createdAt: 'desc' } });
+    // 2. Cargar órdenes
+    const orders = await prisma.order.findMany({
+      where: { createdAt: { gte: targetDate, lt: endDate }, paymentStatus: 'approved' },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    // 3. Total USD de todas las órdenes
+    const allTotalUsd = orders.reduce((sum, o) => sum + Number(o.totalUsd), 0);
+
+    // 4. Conversión de TODO el ingreso a cada moneda
+    const totalVesConverted = Math.round(allTotalUsd * rateVes * 100) / 100;
+    const totalCopConverted = Math.round(allTotalUsd * rateCop * 100) / 100;
+
+    // 5. Desglose por método y por moneda real (solo órdenes en esa moneda)
     const byMethod = {}, byCurrency = {};
-    let totalUsd = 0, totalVes = 0, totalCop = 0;
     for (const order of orders) {
       const method = order.paymentMethod;
       const usd = Number(order.totalUsd);
       if (!byMethod[method]) byMethod[method] = { count: 0, totalUsd: 0 };
       byMethod[method].count++;
       byMethod[method].totalUsd += usd;
-      // Recalcular con tasas actuales
-      if (order.selectedCurrency === 'USD') totalUsd += usd;
-      if (order.selectedCurrency === 'VES') totalVes += usd * rateVes;
-      if (order.selectedCurrency === 'COP') totalCop += usd * rateCop;
+      // Totales por moneda (solo órdenes pagadas en esa moneda)
+      if (order.selectedCurrency === 'USD') byCurrency.USD = (byCurrency.USD || 0) + usd;
+      if (order.selectedCurrency === 'VES') byCurrency.VES = (byCurrency.VES || 0) + usd * rateVes;
+      if (order.selectedCurrency === 'COP') byCurrency.COP = (byCurrency.COP || 0) + usd * rateCop;
     }
-    byCurrency.USD = totalUsd; byCurrency.VES = totalVes; byCurrency.COP = totalCop;
-    res.json({ date: targetDate.toISOString().split('T')[0], totalOrders: orders.length, totalRevenueUsd: orders.reduce((sum, o) => sum + Number(o.totalUsd), 0), byMethod, byCurrency, orders });
+
+    res.json({
+      date: targetDate.toISOString().split('T')[0],
+      totalOrders: orders.length,
+      totalRevenueUsd: allTotalUsd,
+      totalVesConverted,
+      totalCopConverted,
+      rates: { VES: rateVes, COP: rateCop },
+      byMethod,
+      byCurrency: byCurrency || { USD: 0, VES: 0, COP: 0 },
+      orders,
+    });
   } catch (err) {
     console.error('Error fetching daily summary:', err);
     res.json({ date: '', totalOrders: 0, totalRevenueUsd: 0, byMethod: {}, byCurrency: {}, orders: [] });
