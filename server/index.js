@@ -15,7 +15,15 @@ const PORT = process.env.PORT || 4000;
 const isProduction = process.env.NODE_ENV === 'production';
 
 app.use(cors({
-  origin: ['https://veterinaria-mariangel.vercel.app', 'https://veterinariamariangel.onrender.com', 'http://localhost:5173'],
+  origin: function (origin, callback) {
+    // Permitir cualquier origen de Vercel (incluye preview deployments), localhost, y el propio Render
+    const allowed = !origin || origin.endsWith('.vercel.app') || origin === 'https://veterinariamariangel.onrender.com' || origin.startsWith('http://localhost');
+    if (allowed) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
 }));
 app.use(express.json());
