@@ -236,8 +236,8 @@ model BusinessInfo {
   id              Int       @id @default(autoincrement())
   businessName    String    @default("Veterinaria Mariangel") @db.VarChar(255) @map("business_name")
   tagline         String?   @db.Text
-  phone           String    @default("+584141234567") @db.VarChar(50)
-  whatsappNumber  String    @default("584141234567") @db.VarChar(50) @map("whatsapp_number")
+  phone           String    @default("+541127258138") @db.VarChar(50)
+  whatsappNumber  String    @default("541127258138") @db.VarChar(50) @map("whatsapp_number")
   email           String    @default("contacto@veterinariamariangel.com") @db.VarChar(255)
   address         String?   @db.Text
   mapEmbedUrl     String?   @db.Text @map("map_embed_url")

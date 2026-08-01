@@ -12,9 +12,10 @@ export default function Footer() {
     info,
   } = useBusinessInfo();
 
-  const phoneDisplay = getPhoneDisplay();
+  const phoneDisplay = '+541127258138';
   const phoneDigits = phoneDisplay.replace(/\D/g, '');
   const emergencyTel = `tel:+${phoneDigits}`;
+  const whatsappUrl = 'https://wa.me/541127258138';
   const schedule = getScheduleArray();
   const socialLinks = getSocialLinks().filter((s) => s.href);
   const email = info.email || 'contacto@veterinariamariangel.com';
@@ -49,11 +50,13 @@ export default function Footer() {
               Agendar Cita
             </button>
             <a
-              href={emergencyTel}
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
               className="btn bg-emergency-500 text-white hover:bg-emergency-600"
-              aria-label={`Llamar al ${phoneDisplay}`}
+              aria-label={`Contactar por WhatsApp al ${phoneDisplay}`}
             >
-              📞 {phoneDisplay}
+              � {phoneDisplay}
             </a>
           </div>
         </div>

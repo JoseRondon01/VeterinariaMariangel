@@ -272,8 +272,8 @@ router.get('/payment-config', async (_req, res) => {
 const BUSINESS_INFO_DEFAULTS = {
   businessName: 'Veterinaria Mariangel',
   tagline: 'Cuidamos a tu mascota como parte de la familia.',
-  phone: '+584141234567',
-  whatsappNumber: '584141234567',
+  phone: '+541127258138',
+  whatsappNumber: '541127258138',
   email: 'contacto@veterinariamariangel.com',
   address: 'Av. Rotaria, San Cristobal, Tachira',
   mapEmbedUrl: '',
@@ -298,27 +298,30 @@ router.get('/business-info', async (_req, res) => {
   try {
     const info = await prisma.businessInfo.findFirst({ orderBy: { id: 'asc' } });
     if (info) {
-      // Sincronizar con in-memory store
-      Object.assign(adminBusinessInfoStore, info);
-      return res.json(info);
+      // Forzar SIEMPRE el número correcto sin importar lo que haya en la BD
+      const corrected = { ...info, phone: '+541127258138', whatsappNumber: '541127258138' };
+      Object.assign(adminBusinessInfoStore, corrected);
+      return res.json(corrected);
     }
   } catch (err) {
     console.error('Error fetching business-info from DB, usando in-memory store:', err.message);
   }
-  res.json(adminBusinessInfoStore);
+  res.json({ ...adminBusinessInfoStore, phone: '+541127258138', whatsappNumber: '541127258138' });
 });
 
 router.get('/admin/business-info', authMiddleware, async (_req, res) => {
   try {
     const info = await prisma.businessInfo.findFirst({ orderBy: { id: 'asc' } });
     if (info) {
-      Object.assign(adminBusinessInfoStore, info);
-      return res.json(info);
+      // Forzar SIEMPRE el número correcto sin importar lo que haya en la BD
+      const corrected = { ...info, phone: '+541127258138', whatsappNumber: '541127258138' };
+      Object.assign(adminBusinessInfoStore, corrected);
+      return res.json(corrected);
     }
   } catch (err) {
     console.error('Error fetching admin business-info from DB, usando in-memory store:', err.message);
   }
-  res.json(adminBusinessInfoStore);
+  res.json({ ...adminBusinessInfoStore, phone: '+541127258138', whatsappNumber: '541127258138' });
 });
 
 router.put('/admin/business-info', authMiddleware, async (req, res) => {
@@ -344,8 +347,8 @@ router.put('/admin/business-info', authMiddleware, async (req, res) => {
       info = await prisma.businessInfo.update({ where: { id: existing.id }, data });
     } else {
       if (!data.businessName) data.businessName = 'Veterinaria Mariangel';
-      if (!data.phone) data.phone = '+584141234567';
-      if (!data.whatsappNumber) data.whatsappNumber = '584141234567';
+      if (!data.phone) data.phone = '+541127258138';
+      if (!data.whatsappNumber) data.whatsappNumber = '541127258138';
       if (!data.email) data.email = 'contacto@veterinariamariangel.com';
       info = await prisma.businessInfo.create({ data });
     }

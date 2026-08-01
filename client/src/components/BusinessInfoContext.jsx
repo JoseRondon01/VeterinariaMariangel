@@ -5,8 +5,8 @@ const BusinessInfoContext = createContext();
 const DEFAULT_INFO = {
   businessName: 'Veterinaria Mariangel',
   tagline: '',
-  phone: '+584141234567',
-  whatsappNumber: '584141234567',
+  phone: '+541127258138',
+  whatsappNumber: '541127258138',
   email: 'contacto@veterinariamariangel.com',
   address: '',
   mapEmbedUrl: '',
@@ -33,7 +33,8 @@ export function BusinessInfoProvider({ children }) {
       .then((res) => res.json())
       .then((data) => {
         if (data && data.businessName) {
-          setInfo(data);
+          // Forzar SIEMPRE el número correcto de WhatsApp, sin importar lo que devuelva la BD/API
+          setInfo({ ...data, phone: '+541127258138', whatsappNumber: '541127258138' });
         }
       })
       .catch(() => {
@@ -44,13 +45,13 @@ export function BusinessInfoProvider({ children }) {
 
   // Helpers para obtener URLs de WhatsApp
   const getWhatsAppUrl = (text = '') => {
-    const phone = info.whatsappNumber?.replace(/\D/g, '') || '584141234567';
+    const phone = info.whatsappNumber?.replace(/\D/g, '') || '541127258138';
     const msg = text ? `&text=${encodeURIComponent(text)}` : '';
-    return `https://api.whatsapp.com/send/?phone=${phone}${msg}&type=phone_number&app_absent=0`;
+    return `https://wa.me/${phone}${msg}`;
   };
 
   const getPhoneDisplay = () => {
-    const phone = info.phone || '+584141234567';
+    const phone = info.phone || '+541127258138';
     return phone;
   };
 
