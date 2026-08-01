@@ -3,6 +3,9 @@ export default {
   content: ['./index.html', './src/**/*.{js,jsx}'],
   theme: {
     extend: {
+      screens: {
+        xs: '400px',
+      },
       colors: {
         // Azules médicos - transmiten confianza y profesionalismo
         medical: {
