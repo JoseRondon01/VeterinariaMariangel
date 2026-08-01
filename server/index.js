@@ -10,6 +10,29 @@ const __dirname = path.dirname(__filename);
 
 export const prisma = new PrismaClient();
 
+// ===========================================================================
+// Auto-sync de tasas de cambio al arrancar el servidor
+// Garantiza que las tasas en la BD siempre sean correctas (COP = 3200 por 1 USD, VES = 1066 por 1 USD)
+// ===========================================================================
+(async () => {
+  const RATES = {
+    VES: 1066,
+    COP: 3200,
+  };
+  for (const [code, value] of Object.entries(RATES)) {
+    try {
+      await prisma.exchangeRate.upsert({
+        where: { currencyCode: code },
+        update: { rateToUsd: value },
+        create: { currencyCode: code, rateToUsd: value },
+      });
+      console.log(`💱 Tasa ${code}: ${value} (auto-sync exitoso)`);
+    } catch (err) {
+      console.warn(`⚠️ No se pudo sincronizar tasa ${code}: ${err.message}`);
+    }
+  }
+})();
+
 const app = express();
 const PORT = process.env.PORT || 4000;
 const isProduction = process.env.NODE_ENV === 'production';

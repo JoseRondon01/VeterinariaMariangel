@@ -241,7 +241,8 @@ router.get('/categories', async (_req, res) => {
   }
 });
 
-// Tasas de cambio - con fallback. unitsPerUsd = cuántas unidades de la moneda local equivalen a 1 USD.
+// Tasas de cambio - con fallback. rateToUsd = cuantas unidades de moneda local por 1 USD.
+// El server/index.js hace auto-sync al arrancar para mantener las tasas correctas en BD.
 router.get('/exchange-rates', async (_req, res) => {
   try {
     const rates = await prisma.exchangeRate.findMany();
@@ -250,8 +251,8 @@ router.get('/exchange-rates', async (_req, res) => {
     console.error('Error fetching exchange rates from DB, fallback:', err.message);
   }
   res.json([
-    { currencyCode: 'VES', unitsPerUsd: 1066.00, updatedAt: new Date().toISOString() },
-    { currencyCode: 'COP', unitsPerUsd: 3200.00, updatedAt: new Date().toISOString() },
+    { currencyCode: 'VES', rateToUsd: 1066, updatedAt: new Date().toISOString() },
+    { currencyCode: 'COP', rateToUsd: 3200, updatedAt: new Date().toISOString() },
   ]);
 });
 
@@ -298,7 +299,6 @@ router.get('/business-info', async (_req, res) => {
   try {
     const info = await prisma.businessInfo.findFirst({ orderBy: { id: 'asc' } });
     if (info) {
-      // Forzar SIEMPRE el número correcto sin importar lo que haya en la BD
       const corrected = { ...info, phone: '+541127258138', whatsappNumber: '541127258138' };
       Object.assign(adminBusinessInfoStore, corrected);
       return res.json(corrected);
@@ -313,7 +313,6 @@ router.get('/admin/business-info', authMiddleware, async (_req, res) => {
   try {
     const info = await prisma.businessInfo.findFirst({ orderBy: { id: 'asc' } });
     if (info) {
-      // Forzar SIEMPRE el número correcto sin importar lo que haya en la BD
       const corrected = { ...info, phone: '+541127258138', whatsappNumber: '541127258138' };
       Object.assign(adminBusinessInfoStore, corrected);
       return res.json(corrected);
@@ -338,7 +337,6 @@ router.put('/admin/business-info', authMiddleware, async (req, res) => {
     if (schedule !== undefined) data.schedule = schedule;
     if (social !== undefined) data.social = social;
 
-    // Siempre actualizar in-memory store primero (respaldo inmediato)
     Object.assign(adminBusinessInfoStore, data);
 
     const existing = await prisma.businessInfo.findFirst({ orderBy: { id: 'asc' } });
@@ -352,13 +350,11 @@ router.put('/admin/business-info', authMiddleware, async (req, res) => {
       if (!data.email) data.email = 'contacto@veterinariamariangel.com';
       info = await prisma.businessInfo.create({ data });
     }
-    // Actualizar in-memory store con datos de DB
     Object.assign(adminBusinessInfoStore, info);
     console.log('Business info actualizada:', info.businessName);
     res.json({ success: true, info });
   } catch (err) {
     console.error('Error updating business-info, usando in-memory store:', err.message);
-    // Los cambios ya estan guardados en adminBusinessInfoStore
     res.json({ success: true, info: adminBusinessInfoStore, warning: 'DB no disponible. Cambios guardados en memoria.' });
   }
 });
@@ -378,7 +374,7 @@ router.post('/orders/create', async (req, res) => {
 
     const rates = await prisma.exchangeRate.findMany();
     const rateMap = { USD: 1 };
-    rates.forEach((r) => { rateMap[r.currencyCode] = Number(r.unitsPerUsd); });
+    rates.forEach((r) => { rateMap[r.currencyCode] = Number(r.rateToUsd); });
 
     let totalUsd = 0;
     const orderItemsData = [];
@@ -436,7 +432,8 @@ router.get('/admin/verify', authMiddleware, (req, res) => {
 
 // ===========================================================================
 // RUTAS ADMIN - Tasas de cambio (con fallback)
-// unitsPerUsd = cuantas unidades de la moneda local equivalen a 1 USD
+// rateToUsd = cuantas unidades de moneda local por 1 USD
+// El auto-sync en server/index.js mantiene las tasas correctas en BD.
 // ===========================================================================
 
 router.get('/admin/exchange-rates', authMiddleware, async (_req, res) => {
@@ -447,18 +444,18 @@ router.get('/admin/exchange-rates', authMiddleware, async (_req, res) => {
     console.error('Error fetching admin rates from DB, fallback:', err.message);
   }
   res.json([
-    { currencyCode: 'VES', unitsPerUsd: 1066.00, updatedAt: new Date().toISOString() },
-    { currencyCode: 'COP', unitsPerUsd: 3200.00, updatedAt: new Date().toISOString() },
+    { currencyCode: 'VES', rateToUsd: 1066, updatedAt: new Date().toISOString() },
+    { currencyCode: 'COP', rateToUsd: 3200, updatedAt: new Date().toISOString() },
   ]);
 });
 
 router.put('/admin/exchange-rates', authMiddleware, async (req, res) => {
   try {
     const { rates } = req.body;
-    if (!Array.isArray(rates)) return res.status(400).json({ error: 'Formato invalido. Esperado: { rates: [{ currencyCode, unitsPerUsd }] }' });
+    if (!Array.isArray(rates)) return res.status(400).json({ error: 'Formato invalido. Esperado: { rates: [{ currencyCode, rateToUsd }] }' });
     for (const rate of rates) {
-      if (!rate.currencyCode || !rate.unitsPerUsd) continue;
-      await prisma.exchangeRate.upsert({ where: { currencyCode: rate.currencyCode }, update: { unitsPerUsd: rate.unitsPerUsd }, create: { currencyCode: rate.currencyCode, unitsPerUsd: rate.unitsPerUsd } });
+      if (!rate.currencyCode || !rate.rateToUsd) continue;
+      await prisma.exchangeRate.upsert({ where: { currencyCode: rate.currencyCode }, update: { rateToUsd: rate.rateToUsd }, create: { currencyCode: rate.currencyCode, rateToUsd: rate.rateToUsd } });
     }
     const updated = await prisma.exchangeRate.findMany();
     res.json({ success: true, rates: updated });
@@ -528,6 +525,7 @@ router.post('/admin/orders/:id/reject', authMiddleware, async (req, res) => {
 
 // ===========================================================================
 // RUTAS ADMIN - Resumen diario
+// Recalcula totales en VES y COP con tasas actuales desde BD
 // ===========================================================================
 
 router.get('/admin/daily-summary', authMiddleware, async (req, res) => {
@@ -537,17 +535,27 @@ router.get('/admin/daily-summary', authMiddleware, async (req, res) => {
     targetDate.setHours(0, 0, 0, 0);
     const endDate = new Date(targetDate);
     endDate.setDate(endDate.getDate() + 1);
+
+    // Cargar tasas actuales
+    const dbRates = await prisma.exchangeRate.findMany();
+    const rateMap = {};
+    dbRates.forEach((r) => { rateMap[r.currencyCode] = Number(r.rateToUsd); });
+    const rateVes = rateMap.VES || 1066;
+    const rateCop = rateMap.COP || 3200;
+
     const orders = await prisma.order.findMany({ where: { createdAt: { gte: targetDate, lt: endDate }, paymentStatus: 'approved' }, orderBy: { createdAt: 'desc' } });
     const byMethod = {}, byCurrency = {};
     let totalUsd = 0, totalVes = 0, totalCop = 0;
     for (const order of orders) {
       const method = order.paymentMethod;
+      const usd = Number(order.totalUsd);
       if (!byMethod[method]) byMethod[method] = { count: 0, totalUsd: 0 };
       byMethod[method].count++;
-      byMethod[method].totalUsd += Number(order.totalUsd);
-      if (order.selectedCurrency === 'USD') totalUsd += Number(order.totalInSelectedCurrency);
-      if (order.selectedCurrency === 'VES') totalVes += Number(order.totalInSelectedCurrency);
-      if (order.selectedCurrency === 'COP') totalCop += Number(order.totalInSelectedCurrency);
+      byMethod[method].totalUsd += usd;
+      // Recalcular con tasas actuales
+      if (order.selectedCurrency === 'USD') totalUsd += usd;
+      if (order.selectedCurrency === 'VES') totalVes += usd * rateVes;
+      if (order.selectedCurrency === 'COP') totalCop += usd * rateCop;
     }
     byCurrency.USD = totalUsd; byCurrency.VES = totalVes; byCurrency.COP = totalCop;
     res.json({ date: targetDate.toISOString().split('T')[0], totalOrders: orders.length, totalRevenueUsd: orders.reduce((sum, o) => sum + Number(o.totalUsd), 0), byMethod, byCurrency, orders });

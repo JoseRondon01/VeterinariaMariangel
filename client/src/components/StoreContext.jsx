@@ -63,7 +63,7 @@ export function StoreProvider({ children }) {
         if (Array.isArray(data)) {
           data.forEach((r) => {
             const code = r.currencyCode || r.currency_code;
-            const val = Number(r.unitsPerUsd ?? r.units_per_usd ?? r.rateToUsd ?? r.rate_to_usd);
+            const val = Number(r.rateToUsd ?? r.rate_to_usd ?? r.unitsPerUsd ?? r.units_per_usd);
             if (code && !isNaN(val) && val > 0) {
               map[code] = val;
             }

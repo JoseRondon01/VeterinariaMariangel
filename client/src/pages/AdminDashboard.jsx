@@ -447,8 +447,8 @@ function RateManager() {
         setRates(data);
         const ves = data.find((r) => r.currencyCode === 'VES');
         const cop = data.find((r) => r.currencyCode === 'COP');
-        if (ves) setVesRate(String(ves.unitsPerUsd ?? ves.rateToUsd ?? ves.rate_to_usd));
-        if (cop) setCopRate(String(cop.unitsPerUsd ?? cop.rateToUsd ?? cop.rate_to_usd));
+        if (ves) setVesRate(String(ves.rateToUsd ?? ves.unitsPerUsd ?? ves.rate_to_usd ?? ves.units_per_usd));
+        if (cop) setCopRate(String(cop.rateToUsd ?? cop.unitsPerUsd ?? cop.rate_to_usd ?? cop.units_per_usd));
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -463,8 +463,8 @@ function RateManager() {
         headers: API_HEADERS(),
         body: JSON.stringify({
           rates: [
-            { currencyCode: 'VES', unitsPerUsd: Number(vesRate) },
-            { currencyCode: 'COP', unitsPerUsd: Number(copRate) },
+            { currencyCode: 'VES', rateToUsd: Number(vesRate) },
+            { currencyCode: 'COP', rateToUsd: Number(copRate) },
           ],
         }),
       });
