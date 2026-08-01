@@ -9,7 +9,7 @@ export default function WhatsAppButton() {
       href={WHATSAPP_URL}
       target="_blank"
       rel="noopener noreferrer"
-      className="fixed bottom-24 right-4 z-40 group md:bottom-6 md:right-6"
+      className="fixed bottom-4 right-4 z-40 group md:bottom-6 md:right-6"
       aria-label="Contactar por WhatsApp"
     >
       {/* Tooltip */}
