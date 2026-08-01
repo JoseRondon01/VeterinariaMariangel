@@ -241,7 +241,7 @@ router.get('/categories', async (_req, res) => {
   }
 });
 
-// Tasas de cambio - con fallback
+// Tasas de cambio - con fallback. unitsPerUsd = cuántas unidades de la moneda local equivalen a 1 USD.
 router.get('/exchange-rates', async (_req, res) => {
   try {
     const rates = await prisma.exchangeRate.findMany();
@@ -250,8 +250,8 @@ router.get('/exchange-rates', async (_req, res) => {
     console.error('Error fetching exchange rates from DB, fallback:', err.message);
   }
   res.json([
-    { currencyCode: 'VES', rateToUsd: 0, updatedAt: new Date().toISOString() },
-    { currencyCode: 'COP', rateToUsd: 0, updatedAt: new Date().toISOString() },
+    { currencyCode: 'VES', unitsPerUsd: 55.50, updatedAt: new Date().toISOString() },
+    { currencyCode: 'COP', unitsPerUsd: 4400.00, updatedAt: new Date().toISOString() },
   ]);
 });
 
@@ -378,7 +378,7 @@ router.post('/orders/create', async (req, res) => {
 
     const rates = await prisma.exchangeRate.findMany();
     const rateMap = { USD: 1 };
-    rates.forEach((r) => { rateMap[r.currencyCode] = Number(r.rateToUsd); });
+    rates.forEach((r) => { rateMap[r.currencyCode] = Number(r.unitsPerUsd); });
 
     let totalUsd = 0;
     const orderItemsData = [];
@@ -436,6 +436,7 @@ router.get('/admin/verify', authMiddleware, (req, res) => {
 
 // ===========================================================================
 // RUTAS ADMIN - Tasas de cambio (con fallback)
+// unitsPerUsd = cuantas unidades de la moneda local equivalen a 1 USD
 // ===========================================================================
 
 router.get('/admin/exchange-rates', authMiddleware, async (_req, res) => {
@@ -446,18 +447,18 @@ router.get('/admin/exchange-rates', authMiddleware, async (_req, res) => {
     console.error('Error fetching admin rates from DB, fallback:', err.message);
   }
   res.json([
-    { currencyCode: 'VES', rateToUsd: 0, updatedAt: new Date().toISOString() },
-    { currencyCode: 'COP', rateToUsd: 0, updatedAt: new Date().toISOString() },
+    { currencyCode: 'VES', unitsPerUsd: 55.50, updatedAt: new Date().toISOString() },
+    { currencyCode: 'COP', unitsPerUsd: 4400.00, updatedAt: new Date().toISOString() },
   ]);
 });
 
 router.put('/admin/exchange-rates', authMiddleware, async (req, res) => {
   try {
     const { rates } = req.body;
-    if (!Array.isArray(rates)) return res.status(400).json({ error: 'Formato invalido. Esperado: { rates: [{ currencyCode, rateToUsd }] }' });
+    if (!Array.isArray(rates)) return res.status(400).json({ error: 'Formato invalido. Esperado: { rates: [{ currencyCode, unitsPerUsd }] }' });
     for (const rate of rates) {
-      if (!rate.currencyCode || !rate.rateToUsd) continue;
-      await prisma.exchangeRate.upsert({ where: { currencyCode: rate.currencyCode }, update: { rateToUsd: rate.rateToUsd }, create: { currencyCode: rate.currencyCode, rateToUsd: rate.rateToUsd } });
+      if (!rate.currencyCode || !rate.unitsPerUsd) continue;
+      await prisma.exchangeRate.upsert({ where: { currencyCode: rate.currencyCode }, update: { unitsPerUsd: rate.unitsPerUsd }, create: { currencyCode: rate.currencyCode, unitsPerUsd: rate.unitsPerUsd } });
     }
     const updated = await prisma.exchangeRate.findMany();
     res.json({ success: true, rates: updated });

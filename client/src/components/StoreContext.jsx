@@ -45,7 +45,7 @@ const StoreContext = createContext(null);
 export function StoreProvider({ children }) {
   const [cart, setCart] = useState(loadCart);
   const [currency, setCurrencyState] = useState(loadCurrency);
-  const [rates, setRates] = useState({ USD: 1, VES: 35.50, COP: 4200.00 });
+  const [rates, setRates] = useState({ USD: 1, VES: 55.50, COP: 4400.00 });
   const [ratesLoading, setRatesLoading] = useState(true);
 
   // Persistir carrito en localStorage cada vez que cambie
@@ -53,7 +53,7 @@ export function StoreProvider({ children }) {
     saveCart(cart);
   }, [cart]);
 
-  // Cargar tasas de cambio desde la API
+  // Cargar tasas de cambio desde la API (unidades de moneda local por 1 USD)
   useEffect(() => {
     setRatesLoading(true);
     fetch('/api/exchange-rates')
@@ -62,14 +62,21 @@ export function StoreProvider({ children }) {
         const map = { USD: 1 };
         if (Array.isArray(data)) {
           data.forEach((r) => {
-            map[r.currencyCode || r.currency_code] = Number(r.rateToUsd || r.rate_to_usd);
+            const code = r.currencyCode || r.currency_code;
+            const val = Number(r.unitsPerUsd ?? r.units_per_usd ?? r.rateToUsd ?? r.rate_to_usd);
+            if (code && !isNaN(val) && val > 0) {
+              map[code] = val;
+            }
           });
         }
+        // Asegurar que VES y COP tengan valores válidos
+        if (!map.VES || map.VES <= 0) map.VES = 55.50;
+        if (!map.COP || map.COP <= 0) map.COP = 4400.00;
         setRates(map);
       })
       .catch(() => {
         // Fallback con valores por defecto si la API no responde
-        setRates({ USD: 1, VES: 35.50, COP: 4200.00 });
+        setRates({ USD: 1, VES: 55.50, COP: 4400.00 });
       })
       .finally(() => setRatesLoading(false));
   }, []);
@@ -93,9 +100,11 @@ export function StoreProvider({ children }) {
   const convertPrice = useCallback(
     (priceUsd) => {
       const num = Number(priceUsd);
-      if (!num || isNaN(num)) return 0;
+      if (isNaN(num)) return 0;
       if (currency === 'USD') return num;
-      const rate = Number(rates[currency]) || 1;
+      const rate = Number(rates[currency]);
+      // Solo usar tasa si es un número positivo válido; sino retornar 0
+      if (!isFinite(rate) || rate <= 0) return 0;
       return num * rate;
     },
     [currency, rates]

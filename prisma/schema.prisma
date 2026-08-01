@@ -173,7 +173,7 @@ model Product {
 model ExchangeRate {
   id           Int       @id @default(autoincrement())
   currencyCode String    @unique @db.VarChar(3) @map("currency_code")
-  rateToUsd    Decimal   @db.Decimal(12, 4) @map("rate_to_usd")
+  unitsPerUsd  Decimal   @db.Decimal(12, 4) @map("units_per_usd")
   updatedAt    DateTime  @updatedAt @map("updated_at")
 
   @@map("exchange_rates")

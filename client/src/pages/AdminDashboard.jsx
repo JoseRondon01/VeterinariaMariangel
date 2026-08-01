@@ -443,12 +443,12 @@ function RateManager() {
   useEffect(() => {
     fetch('/api/admin/exchange-rates', { headers: API_HEADERS() })
       .then((r) => r.json())
-      .then((data) => {
+       .then((data) => {
         setRates(data);
         const ves = data.find((r) => r.currencyCode === 'VES');
         const cop = data.find((r) => r.currencyCode === 'COP');
-        if (ves) setVesRate(String(ves.rateToUsd));
-        if (cop) setCopRate(String(cop.rateToUsd));
+        if (ves) setVesRate(String(ves.unitsPerUsd ?? ves.rateToUsd ?? ves.rate_to_usd));
+        if (cop) setCopRate(String(cop.unitsPerUsd ?? cop.rateToUsd ?? cop.rate_to_usd));
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -463,8 +463,8 @@ function RateManager() {
         headers: API_HEADERS(),
         body: JSON.stringify({
           rates: [
-            { currencyCode: 'VES', rateToUsd: Number(vesRate) },
-            { currencyCode: 'COP', rateToUsd: Number(copRate) },
+            { currencyCode: 'VES', unitsPerUsd: Number(vesRate) },
+            { currencyCode: 'COP', unitsPerUsd: Number(copRate) },
           ],
         }),
       });
@@ -490,7 +490,7 @@ function RateManager() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
         <div>
           <label className="block text-sm font-medium text-slate-600 mb-1">
-            🇻🇪 Bolívares (VES) — Tasa BCV por 1 USD
+             🇻🇪 Bolívares (VES) — Bolívares por 1 USD
           </label>
           <input
             type="number"
@@ -502,7 +502,7 @@ function RateManager() {
         </div>
         <div>
           <label className="block text-sm font-medium text-slate-600 mb-1">
-            🇨🇴 Pesos Colombianos (COP) — por 1 USD
+             🇨🇴 Pesos Colombianos (COP) — Pesos por 1 USD
           </label>
           <input
             type="number"
