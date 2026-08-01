@@ -157,20 +157,20 @@ export default function CheckoutModal({ open, onClose }) {
   // Pantalla de éxito
   if (success) {
     return (
-      <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
-        <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8 text-center animate-slide-up">
-          <div className="text-6xl mb-4">✅</div>
-          <h2 className="text-2xl font-extrabold text-slate-800 mb-2">¡Pedido Registrado!</h2>
-          <p className="text-slate-600 mb-4">
+      <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+        <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl max-w-md w-full p-5 sm:p-8 text-center animate-slide-up">
+          <div className="text-5xl sm:text-6xl mb-3 sm:mb-4">✅</div>
+          <h2 className="text-xl sm:text-2xl font-extrabold text-slate-800 mb-2">¡Pedido Registrado!</h2>
+          <p className="text-sm sm:text-base text-slate-600 mb-3 sm:mb-4">
             Tu pedido ha sido registrado y está <strong>pendiente de verificación</strong>.
             El equipo de Veterinaria Mariangel revisará tu pago y te contactará pronto.
           </p>
-          <p className="text-sm text-slate-400 mb-6">
+          <p className="text-xs sm:text-sm text-slate-400 mb-5 sm:mb-6">
             Se abrirá WhatsApp para que puedas enviarnos tu comprobante directamente.
           </p>
           <button
             onClick={handleClose}
-            className="w-full py-3 bg-medical-600 text-white rounded-xl font-bold hover:bg-medical-700 transition"
+            className="w-full py-2.5 sm:py-3 bg-medical-600 text-white rounded-xl font-bold hover:bg-medical-700 transition"
           >
             Volver a la Tienda
           </button>
@@ -180,12 +180,12 @@ export default function CheckoutModal({ open, onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto animate-slide-up">
+    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+      <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl max-w-lg w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto animate-slide-up">
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-slate-100 px-6 py-4 rounded-t-2xl z-10">
+        <div className="sticky top-0 bg-white border-b border-slate-100 px-4 sm:px-6 py-3 sm:py-4 rounded-t-2xl z-10">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-extrabold text-slate-800 flex items-center gap-2">
+            <h2 className="text-lg sm:text-xl font-extrabold text-slate-800 flex items-center gap-2">
               <span>🛒</span> Finalizar Pedido
             </h2>
             <button
@@ -201,11 +201,11 @@ export default function CheckoutModal({ open, onClose }) {
           </div>
 
           {/* Stepper */}
-          <div className="flex items-center gap-2 mt-4">
+          <div className="flex items-center gap-1 sm:gap-2 mt-3 sm:mt-4">
             {STEPS.map((label, i) => (
-              <div key={i} className="flex-1 flex items-center gap-2">
+              <div key={i} className="flex-1 flex items-center gap-1 sm:gap-2">
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition ${
+                  className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold transition shrink-0 ${
                     i < step
                       ? 'bg-green-500 text-white'
                       : i === step
@@ -216,20 +216,20 @@ export default function CheckoutModal({ open, onClose }) {
                   {i < step ? '✓' : i + 1}
                 </div>
                 <span
-                  className={`text-xs font-medium hidden sm:inline ${
+                  className={`text-[10px] sm:text-xs font-medium hidden sm:inline ${
                     i <= step ? 'text-slate-800' : 'text-slate-400'
                   }`}
                 >
                   {label}
                 </span>
-                {i < STEPS.length - 1 && <div className="flex-1 h-0.5 bg-slate-200 mx-1" />}
+                {i < STEPS.length - 1 && <div className="flex-1 h-0.5 bg-slate-200 mx-0.5 sm:mx-1" />}
               </div>
             ))}
           </div>
         </div>
 
         {/* Body */}
-        <div className="px-6 py-6">
+        <div className="px-4 sm:px-6 py-4 sm:py-6">
           {/* Error */}
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm flex items-start gap-2">
@@ -238,11 +238,11 @@ export default function CheckoutModal({ open, onClose }) {
           )}
 
           {/* Resumen del carrito */}
-          <div className="mb-6 p-4 bg-slate-50 rounded-xl">
+          <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-slate-50 rounded-xl">
             <h3 className="font-bold text-slate-700 text-sm mb-2">Resumen del Pedido</h3>
-            <div className="space-y-2">
+            <div className="space-y-1.5 sm:space-y-2">
               {cart.map((item) => (
-                <div key={item.productId} className="flex justify-between text-sm">
+                <div key={item.productId} className="flex justify-between text-xs sm:text-sm">
                   <span className="text-slate-600">
                     {item.name} <span className="text-slate-400">x{item.quantity}</span>
                   </span>
@@ -252,8 +252,8 @@ export default function CheckoutModal({ open, onClose }) {
                 </div>
               ))}
               <div className="border-t border-slate-200 pt-2 mt-2 flex justify-between">
-                <span className="font-bold text-slate-800">Total</span>
-                <span className="font-extrabold text-medical-700 text-lg">
+                <span className="font-bold text-slate-800 text-sm">Total</span>
+                <span className="font-extrabold text-medical-700 text-base sm:text-lg">
                   {formatPrice(selectedCurrency === 'USD' ? cartTotalUsd : cartTotalConverted)}
                 </span>
               </div>
@@ -262,7 +262,7 @@ export default function CheckoutModal({ open, onClose }) {
 
           {/* ===== STEP 0: Datos de contacto ===== */}
           {step === 0 && (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
                   Nombre Completo <span className="text-red-500">*</span>
@@ -272,7 +272,7 @@ export default function CheckoutModal({ open, onClose }) {
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
                   placeholder="Ej: María Pérez"
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-medical-500 focus:border-medical-500 outline-none"
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-medical-500 focus:border-medical-500 outline-none"
                 />
               </div>
               <div>
@@ -284,7 +284,7 @@ export default function CheckoutModal({ open, onClose }) {
                   value={customerPhone}
                   onChange={(e) => setCustomerPhone(e.target.value)}
                   placeholder="Ej: +584141234567"
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-medical-500 focus:border-medical-500 outline-none"
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-medical-500 focus:border-medical-500 outline-none"
                 />
               </div>
               <div>
@@ -296,7 +296,7 @@ export default function CheckoutModal({ open, onClose }) {
                   value={customerAddress}
                   onChange={(e) => setCustomerAddress(e.target.value)}
                   placeholder="Ej: Calle Principal, Edif. X, Apto 3"
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-medical-500 focus:border-medical-500 outline-none"
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-medical-500 focus:border-medical-500 outline-none"
                 />
               </div>
             </div>
@@ -304,14 +304,14 @@ export default function CheckoutModal({ open, onClose }) {
 
           {/* ===== STEP 1: Método de pago ===== */}
           {step === 1 && (
-            <div className="space-y-3">
-              <p className="text-sm text-slate-600 mb-2">
+            <div className="space-y-2 sm:space-y-3">
+              <p className="text-xs sm:text-sm text-slate-600 mb-2">
                 Selecciona cómo deseas pagar. Los pagos digitales serán verificados por nuestro equipo.
               </p>
               {PAYMENT_METHODS.map((pm) => (
                 <label
                   key={pm.value}
-                  className={`flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition ${
+                  className={`flex items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition ${
                     paymentMethod === pm.value
                       ? 'border-medical-500 bg-medical-50'
                       : 'border-slate-200 hover:border-slate-300'
@@ -326,8 +326,8 @@ export default function CheckoutModal({ open, onClose }) {
                     className="mt-0.5 accent-medical-600"
                   />
                   <div>
-                    <span className="font-bold text-slate-800 flex items-center gap-2">
-                      <span className="text-xl">{pm.icon}</span> {pm.label}
+                    <span className="font-bold text-slate-800 text-sm sm:text-base flex items-center gap-2">
+                      <span className="text-lg sm:text-xl">{pm.icon}</span> {pm.label}
                     </span>
                     <p className="text-xs text-slate-500 mt-1">{pm.description}</p>
                   </div>
@@ -338,9 +338,9 @@ export default function CheckoutModal({ open, onClose }) {
 
           {/* ===== STEP 2: Confirmar pedido ===== */}
           {step === 2 && (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {/* Datos de contacto */}
-              <div className="p-3 bg-slate-50 rounded-xl text-sm">
+              <div className="p-3 bg-slate-50 rounded-xl text-xs sm:text-sm">
                 <p className="text-slate-500"><strong>Nombre:</strong> {customerName}</p>
                 <p className="text-slate-500"><strong>Teléfono:</strong> {customerPhone}</p>
                 {customerAddress && <p className="text-slate-500"><strong>Dirección:</strong> {customerAddress}</p>}
@@ -349,28 +349,28 @@ export default function CheckoutModal({ open, onClose }) {
 
               {/* Datos bancarios según método seleccionado */}
               {selectedConfig && (
-                <div className="p-4 bg-aqua-50 border border-aqua-200 rounded-xl">
+                <div className="p-3 sm:p-4 bg-aqua-50 border border-aqua-200 rounded-xl">
                   <h4 className="font-bold text-aqua-800 text-sm mb-2">
                     Datos para el pago — {selectedConfig.label}
                   </h4>
                   {selectedConfig.bankName && (
-                    <p className="text-sm text-aqua-700"><strong>Banco:</strong> {selectedConfig.bankName}</p>
+                    <p className="text-xs sm:text-sm text-aqua-700"><strong>Banco:</strong> {selectedConfig.bankName}</p>
                   )}
                   {selectedConfig.accountHolder && (
-                    <p className="text-sm text-aqua-700"><strong>Titular:</strong> {selectedConfig.accountHolder}</p>
+                    <p className="text-xs sm:text-sm text-aqua-700"><strong>Titular:</strong> {selectedConfig.accountHolder}</p>
                   )}
                   {selectedConfig.accountNumber && (
-                    <p className="text-sm text-aqua-700"><strong>Cuenta:</strong> {selectedConfig.accountNumber}</p>
+                    <p className="text-xs sm:text-sm text-aqua-700"><strong>Cuenta:</strong> {selectedConfig.accountNumber}</p>
                   )}
                   {selectedConfig.phone && (
-                    <p className="text-sm text-aqua-700"><strong>Teléfono:</strong> {selectedConfig.phone}</p>
+                    <p className="text-xs sm:text-sm text-aqua-700"><strong>Teléfono:</strong> {selectedConfig.phone}</p>
                   )}
                   {selectedConfig.instructions && (
-                    <p className="text-sm text-aqua-700 mt-2 italic">{selectedConfig.instructions}</p>
+                    <p className="text-xs sm:text-sm text-aqua-700 mt-2 italic">{selectedConfig.instructions}</p>
                   )}
                   <div className="mt-3 p-2 bg-white rounded-lg text-center">
                     <span className="text-xs text-aqua-600">Monto a transferir:</span>
-                    <p className="text-xl font-extrabold text-aqua-800">
+                    <p className="text-lg sm:text-xl font-extrabold text-aqua-800">
                       {formatPrice(selectedCurrency === 'USD' ? cartTotalUsd : cartTotalConverted)}
                     </p>
                   </div>
@@ -393,7 +393,7 @@ export default function CheckoutModal({ open, onClose }) {
                           value={proofDetails.bankOrigin || ''}
                           onChange={(e) => setProofDetails((p) => ({ ...p, bankOrigin: e.target.value }))}
                           placeholder="Ej: Banesco, Mercantil..."
-                          className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-medical-500 focus:border-medical-500 outline-none"
+                          className="w-full px-3 sm:px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-medical-500 focus:border-medical-500 outline-none"
                         />
                       </div>
                       <div>
@@ -404,7 +404,7 @@ export default function CheckoutModal({ open, onClose }) {
                           type="date"
                           value={proofDetails.transferDate || ''}
                           onChange={(e) => setProofDetails((p) => ({ ...p, transferDate: e.target.value }))}
-                          className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-medical-500 focus:border-medical-500 outline-none"
+                          className="w-full px-3 sm:px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-medical-500 focus:border-medical-500 outline-none"
                         />
                       </div>
                       <div>
@@ -417,7 +417,7 @@ export default function CheckoutModal({ open, onClose }) {
                           onChange={(e) => setProofDetails((p) => ({ ...p, referenceDigits: e.target.value.replace(/\D/g, '').slice(0, 4) }))}
                           maxLength={4}
                           placeholder="Ej: 1234"
-                          className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-medical-500 focus:border-medical-500 outline-none"
+                          className="w-full px-3 sm:px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-medical-500 focus:border-medical-500 outline-none"
                         />
                       </div>
                     </>
@@ -434,7 +434,7 @@ export default function CheckoutModal({ open, onClose }) {
                           value={proofDetails.accountHolder || ''}
                           onChange={(e) => setProofDetails((p) => ({ ...p, accountHolder: e.target.value }))}
                           placeholder="Nombre de quien envía el Zelle"
-                          className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-medical-500 focus:border-medical-500 outline-none"
+                          className="w-full px-3 sm:px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-medical-500 focus:border-medical-500 outline-none"
                         />
                       </div>
                       <div>
@@ -446,7 +446,7 @@ export default function CheckoutModal({ open, onClose }) {
                           value={proofDetails.confirmationNumber || ''}
                           onChange={(e) => setProofDetails((p) => ({ ...p, confirmationNumber: e.target.value }))}
                           placeholder="Ej: ZELLE-ABC123"
-                          className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-medical-500 focus:border-medical-500 outline-none"
+                          className="w-full px-3 sm:px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-medical-500 focus:border-medical-500 outline-none"
                         />
                       </div>
                     </>
@@ -457,7 +457,7 @@ export default function CheckoutModal({ open, onClose }) {
               {/* Para efectivo, solo confirmación */}
               {(paymentMethod === 'cash_usd' || paymentMethod === 'cash_cop') && (
                 <div className="p-3 bg-emergency-50 border border-emergency-200 rounded-xl">
-                  <p className="text-sm text-emergency-700">
+                  <p className="text-xs sm:text-sm text-emergency-700">
                     ⚠️ El pago se realizará <strong>contra entrega o retiro en tienda</strong>.
                     Un miembro de nuestro equipo te contactará para coordinar la entrega.
                   </p>
@@ -468,12 +468,12 @@ export default function CheckoutModal({ open, onClose }) {
         </div>
 
         {/* Footer */}
-        <div className="sticky bottom-0 bg-white border-t border-slate-100 px-6 py-4 rounded-b-2xl flex gap-3">
+        <div className="sticky bottom-0 bg-white border-t border-slate-100 px-4 sm:px-6 py-3 sm:py-4 rounded-b-2xl flex gap-2 sm:gap-3">
           {step > 0 && !success && (
             <button
               onClick={handleBack}
               disabled={submitting}
-              className="px-4 py-2.5 border border-slate-200 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 transition disabled:opacity-50"
+              className="px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-600 hover:bg-slate-50 transition disabled:opacity-50"
             >
               ← Atrás
             </button>
@@ -482,7 +482,7 @@ export default function CheckoutModal({ open, onClose }) {
           {step < STEPS.length - 1 ? (
             <button
               onClick={handleNext}
-              className="flex-1 py-2.5 bg-medical-600 text-white rounded-xl font-bold text-sm hover:bg-medical-700 transition"
+              className="flex-1 py-2 sm:py-2.5 bg-medical-600 text-white rounded-xl font-bold text-xs sm:text-sm hover:bg-medical-700 transition"
             >
               Continuar →
             </button>
@@ -490,7 +490,7 @@ export default function CheckoutModal({ open, onClose }) {
             <button
               onClick={handleSubmit}
               disabled={submitting || cart.length === 0}
-              className="flex-1 py-2.5 bg-green-600 text-white rounded-xl font-bold text-sm hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="flex-1 py-2 sm:py-2.5 bg-green-600 text-white rounded-xl font-bold text-xs sm:text-sm hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {submitting ? (
                 <>
