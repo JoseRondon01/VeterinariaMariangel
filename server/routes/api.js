@@ -533,8 +533,8 @@ router.get('/business-info', async (_req, res) => {
       emergency: { label: 'Urgencias', hours: '24/7 · 365 días', highlight: true },
     },
     social: {
-      facebook: '',
-      instagram: '',
+      facebook: 'https://www.facebook.com/jose.m.rondon.5',
+      instagram: 'https://www.instagram.com/joserondoon01/',
       twitter: '',
       tiktok: '',
     },
@@ -565,8 +565,8 @@ router.get('/admin/business-info', authMiddleware, async (_req, res) => {
       emergency: { label: 'Urgencias', hours: '24/7 · 365 días', highlight: true },
     },
     social: {
-      facebook: '',
-      instagram: '',
+      facebook: 'https://www.facebook.com/jose.m.rondon.5',
+      instagram: 'https://www.instagram.com/joserondoon01/',
       twitter: '',
       tiktok: '',
     },
