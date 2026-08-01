@@ -291,24 +291,34 @@ const BUSINESS_INFO_DEFAULTS = {
   },
 };
 
+// In-memory store: persiste cambios incluso cuando la DB falla
+const adminBusinessInfoStore = { ...BUSINESS_INFO_DEFAULTS, id: 1 };
+
 router.get('/business-info', async (_req, res) => {
   try {
     const info = await prisma.businessInfo.findFirst({ orderBy: { id: 'asc' } });
-    if (info) return res.json(info);
+    if (info) {
+      // Sincronizar con in-memory store
+      Object.assign(adminBusinessInfoStore, info);
+      return res.json(info);
+    }
   } catch (err) {
-    console.error('Error fetching business-info from DB:', err.message);
+    console.error('Error fetching business-info from DB, usando in-memory store:', err.message);
   }
-  res.json(BUSINESS_INFO_DEFAULTS);
+  res.json(adminBusinessInfoStore);
 });
 
 router.get('/admin/business-info', authMiddleware, async (_req, res) => {
   try {
     const info = await prisma.businessInfo.findFirst({ orderBy: { id: 'asc' } });
-    if (info) return res.json(info);
+    if (info) {
+      Object.assign(adminBusinessInfoStore, info);
+      return res.json(info);
+    }
   } catch (err) {
-    console.error('Error fetching admin business-info from DB:', err.message);
+    console.error('Error fetching admin business-info from DB, usando in-memory store:', err.message);
   }
-  res.json(BUSINESS_INFO_DEFAULTS);
+  res.json(adminBusinessInfoStore);
 });
 
 router.put('/admin/business-info', authMiddleware, async (req, res) => {
@@ -325,6 +335,9 @@ router.put('/admin/business-info', authMiddleware, async (req, res) => {
     if (schedule !== undefined) data.schedule = schedule;
     if (social !== undefined) data.social = social;
 
+    // Siempre actualizar in-memory store primero (respaldo inmediato)
+    Object.assign(adminBusinessInfoStore, data);
+
     const existing = await prisma.businessInfo.findFirst({ orderBy: { id: 'asc' } });
     let info;
     if (existing) {
@@ -336,26 +349,14 @@ router.put('/admin/business-info', authMiddleware, async (req, res) => {
       if (!data.email) data.email = 'contacto@veterinariamariangel.com';
       info = await prisma.businessInfo.create({ data });
     }
+    // Actualizar in-memory store con datos de DB
+    Object.assign(adminBusinessInfoStore, info);
     console.log('Business info actualizada:', info.businessName);
     res.json({ success: true, info });
   } catch (err) {
-    console.error('Error updating business-info, fallback:', err.message);
-    res.json({
-      success: true,
-      info: {
-        id: 1,
-        businessName: req.body.businessName || 'Veterinaria Mariangel',
-        tagline: req.body.tagline || '',
-        phone: req.body.phone || '+584141234567',
-        whatsappNumber: req.body.whatsappNumber || '584141234567',
-        email: req.body.email || 'contacto@veterinariamariangel.com',
-        address: req.body.address || 'Av. Rotaria, San Cristobal, Tachira',
-        mapEmbedUrl: req.body.mapEmbedUrl || '',
-        schedule: req.body.schedule || {},
-        social: req.body.social || {},
-      },
-      warning: 'Guardado parcial. Posible error de DB: ' + err.message,
-    });
+    console.error('Error updating business-info, usando in-memory store:', err.message);
+    // Los cambios ya estan guardados en adminBusinessInfoStore
+    res.json({ success: true, info: adminBusinessInfoStore, warning: 'DB no disponible. Cambios guardados en memoria.' });
   }
 });
 
