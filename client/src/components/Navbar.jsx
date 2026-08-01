@@ -289,7 +289,48 @@ export default function Navbar() {
               </NavLink>
             ))}
 
-            <div className="mt-8 flex flex-col gap-4 border-t border-white/20 pt-8">
+            {/* Selector de Moneda móvil */}
+            <div className="mt-6 border-t border-white/20 pt-6">
+              <p className="text-white/60 text-xs font-semibold uppercase tracking-wider mb-3 px-2">Moneda</p>
+              <div className="flex gap-2">
+                {CURRENCIES.map((c) => (
+                  <button
+                    key={c.code}
+                    onClick={() => { setCurrency(c.code); handleNavClick(); }}
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                      selectedCurrency === c.code
+                        ? 'bg-white text-medical-700 shadow-lg'
+                        : 'bg-white/10 text-white/80 hover:bg-white/20'
+                    }`}
+                  >
+                    <span>{c.flag}</span>
+                    <span>{c.code}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Carrito móvil */}
+            <div className="border-t border-white/20 pt-6">
+              <button
+                onClick={() => { handleNavClick(); setCheckoutOpen(true); }}
+                className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-white/10 text-white hover:bg-white/20 transition"
+              >
+                <span className="flex items-center gap-2 font-semibold">
+                  <span className="text-xl">🛒</span>
+                  Carrito
+                </span>
+                {cartCount > 0 ? (
+                  <span className="bg-emergency-500 text-white text-xs font-bold rounded-full px-2.5 py-1">
+                    {cartCount} producto{cartCount !== 1 ? 's' : ''}
+                  </span>
+                ) : (
+                  <span className="text-white/50 text-sm">Vacío</span>
+                )}
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-4 border-t border-white/20 pt-6">
               <button
                 onClick={() => {
                   handleNavClick();
