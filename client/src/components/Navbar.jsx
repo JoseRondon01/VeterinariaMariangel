@@ -267,19 +267,19 @@ export default function Navbar() {
         {mobileOpen && (
           <div
             id="mobile-menu"
-            className="md:hidden fixed inset-0 top-16 z-40 bg-white animate-fade-in overflow-y-auto"
+            className="md:hidden fixed inset-0 top-16 z-40 bg-medical-700 animate-fade-in overflow-y-auto"
           >
-            <div className="flex flex-col p-6 gap-1 pt-6">
+            <div className="flex flex-col p-6 gap-1 pt-8">
               {navLinks.map((link) => (
                 <NavLink
                   key={link.to}
                   to={link.to}
                   onClick={handleNavClick}
                   className={({ isActive }) =>
-                    `px-4 py-3.5 rounded-xl text-base font-semibold transition-all border ${
+                    `px-5 py-4 rounded-xl text-lg font-semibold transition-all ${
                       isActive
-                        ? 'bg-medical-50 text-medical-700 border-medical-200 shadow-sm'
-                        : 'text-slate-700 border-transparent hover:bg-slate-50 hover:border-slate-200'
+                        ? 'bg-white/20 text-white'
+                        : 'text-white/90 hover:bg-white/10 hover:text-white'
                     }`
                   }
                 >
@@ -287,13 +287,13 @@ export default function Navbar() {
                 </NavLink>
               ))}
 
-              <div className="mt-6 flex flex-col gap-3 border-t border-slate-200 pt-6">
+              <div className="mt-8 flex flex-col gap-4 border-t border-white/20 pt-8">
                 <button
                   onClick={() => {
                     handleNavClick();
                     openBooking();
                   }}
-                  className="btn-primary w-full py-3.5 text-base"
+                  className="bg-white text-medical-700 font-bold text-lg py-4 rounded-xl shadow-lg hover:bg-white/95 transition active:scale-[0.98] inline-flex items-center justify-center gap-2 w-full"
                   aria-label="Agendar cita online"
                 >
                   <svg
@@ -316,7 +316,7 @@ export default function Navbar() {
                 {/* Botón Servicios móvil */}
                 <button
                   onClick={scrollToServices}
-                  className="btn-secondary w-full py-3.5 text-base"
+                  className="bg-white/10 text-white border-2 border-white/30 font-semibold text-lg py-4 rounded-xl hover:bg-white/20 transition active:scale-[0.98] inline-flex items-center justify-center gap-2 w-full"
                   aria-label="Ver servicios veterinarios"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
