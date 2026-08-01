@@ -58,11 +58,11 @@ export default function ProductCard({ product }) {
 
       {/* Contenido */}
       <div className="p-3 sm:p-4 flex flex-col flex-1">
-        <h3 className="font-bold text-slate-800 text-xs sm:text-sm md:text-base line-clamp-2 mb-1 min-h-[2.2rem] sm:min-h-[2.5rem]">
+        <h3 className="font-bold text-slate-800 text-xs sm:text-sm md:text-base line-clamp-2 mb-1 min-h-[2.2rem] sm:min-h-[2.5rem] break-words">
           {product.name}
         </h3>
         {product.description && (
-          <p className="text-slate-500 text-[11px] sm:text-xs line-clamp-2 mb-2 sm:mb-3 flex-1">
+          <p className="text-slate-500 text-[11px] sm:text-xs line-clamp-2 mb-2 sm:mb-3 flex-1 break-words overflow-hidden">
             {product.description}
           </p>
         )}

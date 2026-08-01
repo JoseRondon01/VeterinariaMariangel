@@ -39,12 +39,12 @@ export default function Shop() {
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Hero tienda */}
-      <section className="bg-gradient-to-br from-medical-700 via-medical-600 to-aqua-700 text-white py-8 sm:py-12 md:py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold font-display mb-2 sm:mb-3">
+      <section className="bg-gradient-to-br from-medical-700 via-medical-600 to-aqua-700 text-white py-8 sm:py-12 md:py-16 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center overflow-hidden">
+          <h1 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold font-display mb-2 sm:mb-3 break-words hyphens-auto px-2">
             🛒 Tienda Veterinaria
           </h1>
-          <p className="text-medical-100 text-sm sm:text-base md:text-lg max-w-2xl mx-auto px-2">
+          <p className="text-medical-100 text-xs xs:text-sm sm:text-base md:text-lg max-w-full sm:max-w-2xl mx-auto px-3 break-words">
             Todo lo que tu mascota necesita: alimentos, medicamentos, accesorios y más.
             Paga en USD, Bolívares o Pesos Colombianos.
           </p>
@@ -84,7 +84,7 @@ export default function Shop() {
           </div>
 
           {/* Categorías */}
-          <div className="flex flex-wrap gap-1.5 sm:gap-2">
+          <div className="flex flex-nowrap overflow-x-auto gap-1.5 sm:gap-2 pb-2 -mx-1 px-1 scrollbar-none" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
             <button
               onClick={() => setSelectedCategory(null)}
               className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-medium transition ${
