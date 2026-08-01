@@ -267,19 +267,19 @@ export default function Navbar() {
         {mobileOpen && (
           <div
             id="mobile-menu"
-            className="md:hidden fixed inset-0 top-16 z-40 bg-gradient-to-br from-medical-700 via-medical-600 to-aqua-700 animate-fade-in"
+            className="md:hidden fixed inset-0 top-16 z-40 bg-white animate-fade-in overflow-y-auto"
           >
-            <div className="flex flex-col p-6 gap-2 pt-8">
+            <div className="flex flex-col p-6 gap-1 pt-6">
               {navLinks.map((link) => (
                 <NavLink
                   key={link.to}
                   to={link.to}
                   onClick={handleNavClick}
                   className={({ isActive }) =>
-                    `px-4 py-3 rounded-xl text-lg font-medium transition-all ${
+                    `px-4 py-3.5 rounded-xl text-base font-semibold transition-all border ${
                       isActive
-                        ? 'bg-white/20 text-white font-bold'
-                        : 'text-white/90 hover:bg-white/10 hover:text-white'
+                        ? 'bg-medical-50 text-medical-700 border-medical-200 shadow-sm'
+                        : 'text-slate-700 border-transparent hover:bg-slate-50 hover:border-slate-200'
                     }`
                   }
                 >
@@ -287,13 +287,13 @@ export default function Navbar() {
                 </NavLink>
               ))}
 
-              <div className="mt-6 flex flex-col gap-3 border-t border-white/20 pt-6">
+              <div className="mt-6 flex flex-col gap-3 border-t border-slate-200 pt-6">
                 <button
                   onClick={() => {
                     handleNavClick();
                     openBooking();
                   }}
-                  className="bg-white text-medical-700 hover:bg-white/90 active:scale-[0.98] shadow-lg inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold text-sm transition-all w-full"
+                  className="btn-primary w-full py-3.5 text-base"
                   aria-label="Agendar cita online"
                 >
                   <svg
@@ -316,18 +316,13 @@ export default function Navbar() {
                 {/* Botón Servicios móvil */}
                 <button
                   onClick={scrollToServices}
-                  className="bg-white/10 text-white border border-white/30 hover:bg-white/20 active:scale-[0.98] inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold text-sm transition-all w-full"
+                  className="btn-secondary w-full py-3.5 text-base"
                   aria-label="Ver servicios veterinarios"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                   </svg>
-                  <span className="flex flex-col items-start leading-tight">
-                    <span className="text-xs font-normal opacity-80">
-                      Nuestros
-                    </span>
-                    <span className="font-bold">Servicios</span>
-                  </span>
+                  Nuestros Servicios
                 </button>
               </div>
             </div>
