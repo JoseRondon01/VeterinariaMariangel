@@ -60,7 +60,7 @@ export default function Services() {
         </div>
 
         {loading ? (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid xs:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {[...Array(6)].map((_, i) => (
               <div
                 key={i}
@@ -75,11 +75,11 @@ export default function Services() {
             ))}
           </div>
         ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid xs:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {services.map((service) => (
               <article
                 key={service.id}
-                className="card-hover p-6 group"
+                className="card-hover p-4 sm:p-6 group"
                 aria-labelledby={`service-${service.id}-title`}
               >
                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-medical-100 to-aqua-100 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">

@@ -21,8 +21,8 @@ export default function HeroSection() {
         aria-hidden="true"
       />
 
-      <div className="relative section pt-12 md:pt-20 pb-20 md:pb-28">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+      <div className="relative section pt-8 sm:pt-12 md:pt-20 pb-12 sm:pb-16 md:pb-28">
+        <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 items-center">
           {/* Columna de texto */}
           <div className="text-center lg:text-left animate-slide-up">
             {/* Badge superior */}
@@ -36,26 +36,26 @@ export default function HeroSection() {
 
             <h1
               id="hero-title"
-              className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 leading-tight mb-5"
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-slate-900 leading-tight mb-3 sm:mb-5"
             >
               Cuidamos a tu mascota{' '}
               <span className="text-medical-600">como parte de la familia</span>
             </h1>
 
-            <p className="text-lg md:text-xl text-slate-600 mb-8 max-w-xl mx-auto lg:mx-0">
+            <p className="text-sm sm:text-base md:text-lg lg:text-xl text-slate-600 mb-6 sm:mb-8 max-w-xl mx-auto lg:mx-0">
               Clínica veterinaria con equipo médico certificado, tecnología de
               punta y trato humano. Agenda tu cita online en solo 3 pasos.
             </p>
 
             {/* CTAs */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+            <div className="flex flex-col xs:flex-row gap-3 sm:gap-4 justify-center lg:justify-start">
               <button
                 onClick={openBooking}
-                className="btn-primary text-lg px-8 py-4"
+                className="btn-primary"
                 aria-label="Agendar cita online ahora"
               >
                 <svg
-                  className="w-6 h-6"
+                  className="w-4 h-4 sm:w-5 sm:h-5"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="2"
@@ -73,11 +73,11 @@ export default function HeroSection() {
 
               <a
                 href={EMERGENCY_TEL}
-                className="btn-emergency text-lg px-8 py-4"
+                className="btn-emergency"
                 aria-label="Emergencia veterinaria 24 horas - Llamar ahora"
               >
                 <svg
-                  className="w-6 h-6"
+                  className="w-4 h-4 sm:w-5 sm:h-5"
                   fill="currentColor"
                   viewBox="0 0 24 24"
                   aria-hidden="true"
@@ -89,18 +89,18 @@ export default function HeroSection() {
             </div>
 
             {/* Mini métricas de confianza */}
-            <div className="mt-10 flex flex-wrap gap-6 justify-center lg:justify-start">
-              <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold text-medical-600">5,000+</span>
-                <span className="text-sm text-slate-600">mascotas atendidas</span>
+            <div className="mt-6 sm:mt-8 md:mt-10 flex flex-wrap gap-3 sm:gap-6 justify-center lg:justify-start">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <span className="text-lg sm:text-xl md:text-2xl font-bold text-medical-600">5,000+</span>
+                <span className="text-xs sm:text-sm text-slate-600">mascotas atendidas</span>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold text-aqua-600">4.9★</span>
-                <span className="text-sm text-slate-600">487 reseñas</span>
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <span className="text-lg sm:text-xl md:text-2xl font-bold text-aqua-600">4.9★</span>
+                <span className="text-xs sm:text-sm text-slate-600">487 reseñas</span>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold text-medical-600">12+</span>
-                <span className="text-sm text-slate-600">años de experiencia</span>
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <span className="text-lg sm:text-xl md:text-2xl font-bold text-medical-600">12+</span>
+                <span className="text-xs sm:text-sm text-slate-600">años de experiencia</span>
               </div>
             </div>
           </div>
@@ -119,23 +119,23 @@ export default function HeroSection() {
               />
             </div>
 
-            {/* Card flotante - Certificación */}
-            <div className="absolute -bottom-5 -left-3 sm:-left-6 bg-white rounded-2xl shadow-xl p-4 flex items-center gap-3 max-w-[200px]">
-              <div className="w-12 h-12 rounded-full bg-aqua-100 flex items-center justify-center text-2xl shrink-0">
+            {/* Card flotante - Certificación (oculta en móvil) */}
+            <div className="hidden sm:flex absolute -bottom-5 -left-3 sm:-left-6 bg-white rounded-2xl shadow-xl p-3 sm:p-4 items-center gap-2 sm:gap-3 max-w-[160px] sm:max-w-[200px]">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-aqua-100 flex items-center justify-center text-xl sm:text-2xl shrink-0">
                 🏆
               </div>
               <div>
-                <p className="text-sm font-bold text-slate-900">Fear Free Certified</p>
-                <p className="text-xs text-slate-500">Atención sin estrés</p>
+                <p className="text-xs sm:text-sm font-bold text-slate-900">Fear Free Certified</p>
+                <p className="text-[10px] sm:text-xs text-slate-500">Atención sin estrés</p>
               </div>
             </div>
 
-            {/* Card flotante - Disponibilidad */}
-            <div className="absolute -top-4 -right-3 sm:-right-6 bg-white rounded-2xl shadow-xl p-4 flex items-center gap-3">
+            {/* Card flotante - Disponibilidad (oculta en móvil) */}
+            <div className="hidden sm:flex absolute -top-4 -right-3 sm:-right-6 bg-white rounded-2xl shadow-xl p-3 sm:p-4 items-center gap-2 sm:gap-3">
               <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
               <div>
-                <p className="text-sm font-bold text-slate-900">Abierto ahora</p>
-                <p className="text-xs text-slate-500">Guardia 24/7 activa</p>
+                <p className="text-xs sm:text-sm font-bold text-slate-900">Abierto ahora</p>
+                <p className="text-[10px] sm:text-xs text-slate-500">Guardia 24/7 activa</p>
               </div>
             </div>
           </div>

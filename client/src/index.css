@@ -9,6 +9,7 @@
 
   body {
     @apply bg-slate-50 text-slate-800 font-sans antialiased;
+    overflow-x: hidden;
   }
 
   h1,
@@ -26,7 +27,12 @@
 
 @layer components {
   .btn {
-    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-200 text-base focus-visible:ring-2 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-xl font-semibold transition-all duration-200 text-sm focus-visible:ring-2 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  @screen sm {
+    .btn {
+      @apply gap-2 py-3 px-6 text-base;
+    }
   }
 
   .btn-primary {
@@ -46,23 +52,28 @@
   }
 
   .card-hover {
-    @apply card hover:shadow-xl hover:-translate-y-1 hover:border-medical-200;
+    @apply card hover:shadow-xl sm:hover:-translate-y-1 hover:border-medical-200;
   }
 
   .section {
-    @apply py-16 md:py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto;
+    @apply py-10 sm:py-14 md:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto;
   }
 
   .section-title {
-    @apply text-3xl md:text-4xl font-bold text-slate-900 mb-3;
+    @apply text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 mb-2 sm:mb-3;
   }
 
   .section-subtitle {
-    @apply text-lg text-slate-600 max-w-2xl mx-auto;
+    @apply text-sm sm:text-base md:text-lg text-slate-600 max-w-xl sm:max-w-2xl mx-auto;
   }
 
   .chip {
-    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium;
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  @screen sm {
+    .chip {
+      @apply gap-1.5 text-sm;
+    }
   }
 }
 
@@ -82,7 +93,7 @@
   background: #94a3b8;
 }
 
-/* Efectos neân */
+/* Efectos neón */
 .neon-text {
   color: #0f7afe;
   text-shadow: 0 0 5px #00fffe, 0 0 10px #00bffe, 0 0 20px #00bffe, 0 0 40px #00bffe;
