@@ -250,8 +250,8 @@ router.get('/exchange-rates', async (_req, res) => {
     console.error('Error fetching exchange rates from DB, fallback:', err.message);
   }
   res.json([
-    { currencyCode: 'VES', unitsPerUsd: 55.50, updatedAt: new Date().toISOString() },
-    { currencyCode: 'COP', unitsPerUsd: 4400.00, updatedAt: new Date().toISOString() },
+    { currencyCode: 'VES', unitsPerUsd: 1066.00, updatedAt: new Date().toISOString() },
+    { currencyCode: 'COP', unitsPerUsd: 3200.00, updatedAt: new Date().toISOString() },
   ]);
 });
 
@@ -447,8 +447,8 @@ router.get('/admin/exchange-rates', authMiddleware, async (_req, res) => {
     console.error('Error fetching admin rates from DB, fallback:', err.message);
   }
   res.json([
-    { currencyCode: 'VES', unitsPerUsd: 55.50, updatedAt: new Date().toISOString() },
-    { currencyCode: 'COP', unitsPerUsd: 4400.00, updatedAt: new Date().toISOString() },
+    { currencyCode: 'VES', unitsPerUsd: 1066.00, updatedAt: new Date().toISOString() },
+    { currencyCode: 'COP', unitsPerUsd: 3200.00, updatedAt: new Date().toISOString() },
   ]);
 });
 

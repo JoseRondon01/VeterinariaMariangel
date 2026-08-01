@@ -45,7 +45,7 @@ const StoreContext = createContext(null);
 export function StoreProvider({ children }) {
   const [cart, setCart] = useState(loadCart);
   const [currency, setCurrencyState] = useState(loadCurrency);
-  const [rates, setRates] = useState({ USD: 1, VES: 55.50, COP: 4400.00 });
+  const [rates, setRates] = useState({ USD: 1, VES: 1066.00, COP: 3200.00 });
   const [ratesLoading, setRatesLoading] = useState(true);
 
   // Persistir carrito en localStorage cada vez que cambie
@@ -70,13 +70,13 @@ export function StoreProvider({ children }) {
           });
         }
         // Asegurar que VES y COP tengan valores válidos
-        if (!map.VES || map.VES <= 0) map.VES = 55.50;
-        if (!map.COP || map.COP <= 0) map.COP = 4400.00;
+        if (!map.VES || map.VES <= 0) map.VES = 1066.00;
+        if (!map.COP || map.COP <= 0) map.COP = 3200.00;
         setRates(map);
       })
       .catch(() => {
         // Fallback con valores por defecto si la API no responde
-        setRates({ USD: 1, VES: 55.50, COP: 4400.00 });
+        setRates({ USD: 1, VES: 1066.00, COP: 3200.00 });
       })
       .finally(() => setRatesLoading(false));
   }, []);

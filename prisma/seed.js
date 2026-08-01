@@ -35,8 +35,8 @@ async function main() {
   console.log(`  ✅ ${products.length} productos`);
 
   // Tasas de cambio
-  await prisma.exchangeRate.upsert({ where: { currencyCode: 'VES' }, update: { unitsPerUsd: 55.50 }, create: { currencyCode: 'VES', unitsPerUsd: 55.50 } });
-  await prisma.exchangeRate.upsert({ where: { currencyCode: 'COP' }, update: { unitsPerUsd: 4400.00 }, create: { currencyCode: 'COP', unitsPerUsd: 4400.00 } });
+  await prisma.exchangeRate.upsert({ where: { currencyCode: 'VES' }, update: { unitsPerUsd: 1066.00 }, create: { currencyCode: 'VES', unitsPerUsd: 1066.00 } });
+  await prisma.exchangeRate.upsert({ where: { currencyCode: 'COP' }, update: { unitsPerUsd: 3200.00 }, create: { currencyCode: 'COP', unitsPerUsd: 3200.00 } });
   console.log('  ✅ Tasas de cambio (VES=35.50, COP=4200.00)');
 
   // Config de pagos
